@@ -1,183 +1,238 @@
 import React from "react";
-import { Link } from "react-router-dom";
-import { FiMapPin, FiPhone, FiMail } from "react-icons/fi";
-import { FaInstagram, FaFacebookF, FaTwitter, FaLinkedinIn } from "react-icons/fa";
-import readyquick from "../../assets/navbar/readyquick.png"; // your brand logo
+import { Link, useNavigate, useLocation } from "react-router-dom";
+import {
+  FaTwitter,
+  FaFacebookF,
+  FaInstagram,
+  FaLinkedinIn,
+  FaSkype,
+} from "react-icons/fa";
+import { IoChevronForwardOutline } from "react-icons/io5";
 
 export default function Footer() {
+  const navigate = useNavigate();
+  const location = useLocation();
 
-  const menuItems = [
-    {
-      id: 1, label: "Founders' Desk", slug: "/founders-desk"
-    },
-    { id: 2, label: "Menu", slug: "/menu" },
+  const pages = [
+    { label: "Home", id: "home" },
+    { label: "About", id: "about" },
+    { label: "Why CredRoot?", id: "why-credroot" },
+    { label: "Products", id: "products" },
+    { label: "FAQs", id: "faqs" },
+    { label: "Contact", id: "contact" },
+  ];
 
+  const usefulLinks = [
     {
-      id: 3, label: "Our Services",
-      slug: "/services" 
+      label: "Grievance Policy",
+      slug: "/grievance-policy",
     },
     {
-      id: 4, label: "About Us",
-      slug: "/about-us"
+      label: "Privacy Policy",
+      slug: "/privacy-policy",
+    },
+    {
+      label: "Fair Practice Code",
+      slug: "/fair-practice-code",
+    },
+    {
+      label: "Terms and Conditions",
+      slug: "/terms-and-conditions",
     },
   ];
 
+  const scrollToSection = (id) => {
+    if (location.pathname !== "/") {
+      navigate("/", {
+        state: {
+          scrollTo: id,
+        },
+      });
+      return;
+    }
+
+    const element = document.getElementById(id);
+
+    if (element) {
+      const navbarHeight = 90;
+
+      const offsetTop =
+        element.getBoundingClientRect().top +
+        window.pageYOffset -
+        navbarHeight;
+
+      window.scrollTo({
+        top: offsetTop,
+        behavior: "smooth",
+      });
+    }
+  };
+
   return (
-    <footer className="bg-white py-16 border-t border-neutral-300">
-      <div className="max-w-screen-xl mx-auto px-6 grid grid-cols-1 md:grid-cols-[1.4fr_0.9fr_1.6fr_1.2fr] gap-6">
-        {/* LEFT SECTION — BRAND */}
-        <div>
-          <img
-            src={readyquick}
-            alt="Ready Quick"
-            className="h-20 object-contain mb-6"
-          />
+    <footer className="mt-auto">
+      {/* Main Footer */}
+      <div className="bg-[#efefef] py-16 lg:py-20">
+        <div className="max-w-7xl mx-auto px-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 lg:gap-20">
 
-          <p className="text-gray-600 leading-relaxed max-w-xs">
-            Bringing the warmth of home-cooked meals to every corner of the globe.
-          </p>
-        </div>
-
-        {/* QUICK LINKS */}
-        <div>
-          <h3 className="font-semibold text-gray-900 mb-4 tracking-wide">
-            QUICK LINKS
-          </h3>
-
-          <ul className="space-y-3 text-gray-600">
-            {menuItems.map((item) => (
-              <li key={item.id}>
-                <Link
-                  to={item.slug || "#"}
-                  className=" transition"
-                >
-                  {item.label}
-                </Link>
-              </li>
-            ))}
-          </ul>
-        </div>
-
-        {/* CONTACT */}
-        <div>
-          <h3 className="font-semibold text-gray-900 mb-4 tracking-wide">CONTACT US</h3>
-
-          <ul className="space-y-4 text-gray-600">
-            <li className="cursor-pointer flex items-start gap-3">
-              <FiMapPin className="text-[#12634a] mt-1" />
-
-              <span>
-                A101, Shantiniketan-1, Raspan Cross Road, <br />
-                Nr. Pavilion Mall, New India Colony, <br />
-                Nikol, Ahmedabad, Gujarat, India
-              </span>
-            </li>
-
-            <li className="cursor-pointer flex items-center gap-3">
-              <FiPhone className="text-[#12634a]" />
-
-              <Link
-                to="https://wa.me/919737379159"
-                target="_blank"
-                rel="noopener noreferrer"
-                className=" transition"
+            {/* Logo + Address */}
+            <div className="text-center lg:text-left">
+              <button
+                onClick={() => scrollToSection("home")}
+                className="inline-block mb-6 text-left"
               >
-                +91 97373 79159
-              </Link>
-            </li>
+                <h2 className="text-[32px] font-medium leading-none">
+                  <span className="text-black">Cred</span>
+                  <span className="text-[#1E88FF]">Root</span>
+                </h2>
+              </button>
 
-            <li className="cursor-pointer flex items-center gap-3">
-              <FiMail className="text-[#12634a]" />
+              <div className="text-gray-800 text-[17px] leading-9">
+                <p>C-315, K.P. Epitome,</p>
+                <p>Nr. Siddhivinayak Tower, Makarba,</p>
+                <p>Ahmedabad - 380015,</p>
+                <p>Gujarat, India.</p>
 
-              <Link
-                to="mailto:mihir@readyquick.in"
-                className="transition-colors"
-              >
-                mihir@readyquick.in
-              </Link>
-            </li>
-          </ul>
-        </div>
+                <p className="mt-4">
+                  <span className="font-semibold">Email:</span>{" "}
+                  <a
+                    href="mailto:info@credroot.com"
+                    className="hover:text-[#1E88FF]"
+                  >
+                    info@credroot.com
+                  </a>
+                </p>
+              </div>
+            </div>
 
-        {/* SOCIAL LINKS */}
-        {/* SOCIAL LINKS */}
-        <div>
-          <h3
-            className="
-      text-[#111827]
-      text-xl
-      font-bold
-      tracking-wide
-      mb-6
-    "
-          >
-            FOLLOW US
-          </h3>
+            {/* Other Pages */}
+            <div>
+              <h3 className="text-[18px] font-bold text-black mb-8">
+                Other Pages
+              </h3>
 
-          {/* Social Icons */}
-          <div className="flex items-center gap-4">
+              <ul className="space-y-5">
+                {pages.map((item) => (
+                  <li key={item.id}>
+                    <button
+                      onClick={() => scrollToSection(item.id)}
+                      className="flex items-center gap-2 text-[17px] text-gray-600 hover:text-[#1E88FF] transition"
+                    >
+                      <IoChevronForwardOutline className="text-[#1E88FF]" />
+                      {item.label}
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            </div>
 
-            <SocialIcon icon={<FaInstagram />} />
-            <SocialIcon icon={<FaFacebookF />} />
-            <SocialIcon icon={<FaTwitter />} />
-            <SocialIcon icon={<FaLinkedinIn />} />
-          </div>
+            {/* Useful Links */}
+            <div>
+              <h3 className="text-[18px] font-bold text-black mb-8">
+                Useful Links
+              </h3>
 
-          {/* GSTIN CARD */}
-          <div
-            className="
-      mt-8
-      bg-[#f8f8f8]
-      border 
-      rounded-2xl
-      px-5 py-4
-      border-[#0E7A53]
-      transition-all duration-300
-    "
-          >
-            <p
-              className="
-        text-[11px]
-        uppercase
-        tracking-[3px]
-        text-[#0E7A53]
-        font-semibold
-        mb-2
-      "
-            >
-              GSTIN
-            </p>
+              <ul className="space-y-5">
+                {usefulLinks.map((item) => (
+                  <li key={item.label}>
+                    <Link
+                      to={item.slug}
+                      className="flex items-center gap-2 text-[17px] text-gray-600 hover:text-[#1E88FF] transition"
+                    >
+                      <IoChevronForwardOutline className="text-[#1E88FF]" />
+                      {item.label}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
 
-            <p
-              className="
-        text-[#111827]
-        text-[18px]
-        font-semibold
-        tracking-wide
-        break-all
-      "
-            >
-              24AZCPD2053K2ZQ
-            </p>
+            {/* Social Networks */}
+            <div>
+              <h3 className="text-[18px] font-bold text-black mb-8">
+                Our Social Networks
+              </h3>
+
+              <p className="text-[17px] text-gray-800 leading-8 mb-8">
+                Follow us and get updates on latest news
+                <br />
+                from our Social Media handles
+              </p>
+
+              <div className="flex flex-wrap gap-4">
+                <SocialIcon
+                  icon={<FaTwitter />}
+                  href="https://twitter.com"
+                />
+
+                <SocialIcon
+                  icon={<FaFacebookF />}
+                  href="https://facebook.com"
+                />
+
+                <SocialIcon
+                  icon={<FaInstagram />}
+                  href="https://instagram.com"
+                />
+
+                <SocialIcon
+                  icon={<FaSkype />}
+                  href="https://skype.com"
+                />
+
+                <SocialIcon
+                  icon={<FaLinkedinIn />}
+                  href="https://linkedin.com"
+                />
+              </div>
+            </div>
+
           </div>
         </div>
       </div>
 
-      {/* BOTTOM BAR */}
-      <div className="border-t border-gray-200 mt-12 pt-6 flex flex-col md:flex-row items-center justify-between text-gray-600 px-6 max-w-screen-xl mx-auto">
-        <p>© {new Date().getFullYear()} Ready Quick. All rights reserved.</p>
-        <div className="flex gap-8 mt-4 md:mt-0">
-          <Link className="cursor-pointer">Privacy Policy</Link>
-          <Link className="cursor-pointer">Terms of Service</Link>
+      {/* Copyright */}
+      <div className="bg-black">
+        <div className="max-w-[1400px] mx-auto px-6 py-5 flex flex-col md:flex-row items-center justify-between">
+          <p className="text-white text-[17px] text-center md:text-left">
+            © Copyright{" "}
+            <span className="font-bold">
+              CredRoot
+            </span>
+            . All Rights Reserved
+          </p>
+
+          {/* <p className="text-white text-[17px] mt-3 md:mt-0">
+            Website Powered By{" "}
+            <span className="text-[#1E88FF]">
+              Werge
+            </span>
+          </p> */}
         </div>
       </div>
     </footer>
   );
 }
 
-/* Small reusable icon component */
-const SocialIcon = ({ icon }) => (
-  <div className="cursor-pointer w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center text-gray-700 hover:bg-gray-200 transition">
-    {icon}
-  </div>
-);
+function SocialIcon({ icon, href }) {
+  return (
+    <a
+      href={href}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="
+        w-10 h-10
+        rounded-full
+        bg-[#1E88FF]
+        text-white
+        flex items-center justify-center
+        text-lg
+        hover:scale-110
+        transition-all
+        duration-300
+      "
+    >
+      {icon}
+    </a>
+  );
+}

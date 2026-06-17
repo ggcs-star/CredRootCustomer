@@ -1,24 +1,36 @@
 import React from "react";
-import { useRoutes, Outlet } from "react-router-dom";
+import { useRoutes } from "react-router-dom";
 
 import Home from "./Home";
-import Menu from "./Menu";
-import Founders from "./Founders";
-import AboutUs from "./AboutUs";
-import Services from "./Services";
+import Signup from "../../container/Auth/Signup";
+import Login from "../../container/Auth/Login";
+import Profile from "../../container/Profile";
 
-
+import ProtectedRoute from "./ProtectedRoute";
 
 export default function MainRoutes(props) {
-    const routes = useRoutes([
-        { path: "", element: <Home {...props} /> },
-        { path: "/menu", element: <Menu {...props} /> },
-        { path: "/about-us", element: <AboutUs {...props} /> },
-        { path: "/founders-desk", element: <Founders {...props} /> },
-        { path: "/services", element: <Services {...props} /> },
- 
-        
-        Outlet,
-    ]);
-    return <div className="">{routes}</div>;
+  const routes = useRoutes([
+    {
+      path: "",
+      element: <Home {...props} />,
+    },
+    {
+      path: "/login",
+      element: <Login {...props} />,
+    },
+    {
+      path: "/signup",
+      element: <Signup {...props} />,
+    },
+    {
+      path: "/profile",
+      element: (
+        <ProtectedRoute>
+          <Profile />
+        </ProtectedRoute>
+      ),
+    },
+  ]);
+
+  return <div>{routes}</div>;
 }
