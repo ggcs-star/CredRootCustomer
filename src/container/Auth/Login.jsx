@@ -21,52 +21,167 @@ const Login = () => {
     }));
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+const handleSubmit = async (e) => {
+  e.preventDefault();
 
-    try {
-      setLoading(true);
+  try {
+    setLoading(true);
 
-      const response = await loginUser(formData);
+    const response = await loginUser(formData);
 
-      console.log("Login Response:", response.data);
+    console.log(
+      "Login Response:",
+      response.data
+    );
 
-      const token =
-        response?.data?.token ||
-        response?.data?.access_token ||
-        response?.data?.data?.token;
+    const token =
+      response?.data?.access_token ||
+      response?.data?.token;
 
-      const user =
-        response?.data?.user ||
-        response?.data?.data?.user;
+    const user =
+      response?.data?.user;
 
-      if (token) {
-        localStorage.setItem("token", token);
-      }
+    const onboardingData =
+      response?.data?.onboarding_data;
 
-      if (user) {
-        localStorage.setItem("user", JSON.stringify(user));
-      }
-
-      // Dispatch authChanged event to notify navbar
-      window.dispatchEvent(new Event("authChanged"));
-
-      alert(
-        response?.data?.message || "Login successful"
+    // Save Token
+    if (token) {
+      localStorage.setItem(
+        "token",
+        token
       );
-
-      navigate("/");
-    } catch (error) {
-      console.error(error);
-
-      alert(
-        error?.response?.data?.message ||
-          "Invalid email or password"
-      );
-    } finally {
-      setLoading(false);
     }
-  };
+
+    // Save User
+    if (user) {
+      localStorage.setItem(
+        "user",
+        JSON.stringify(user)
+      );
+    }
+
+    // Save Onboarding Data
+    if (onboardingData) {
+      localStorage.setItem(
+        "onboarding_data",
+        JSON.stringify(
+          onboardingData
+        )
+      );
+
+      // Save Company ID
+      if (
+        onboardingData?.company?.id
+      ) {
+        localStorage.setItem(
+          "company_id",
+          onboardingData.company.id
+        );
+      }
+
+      // Save Lead ID
+      if (
+        onboardingData?.active_lead
+          ?.id
+      ) {
+        localStorage.setItem(
+          "lead_id",
+          onboardingData.active_lead.id
+        );
+      }
+
+      // Save Bank ID
+      if (
+        onboardingData
+          ?.bank_accounts
+          ?.length > 0
+      ) {
+        localStorage.setItem(
+          "bank_id",
+          onboardingData
+            .bank_accounts[0].id
+        );
+      }
+    }
+
+    console.log(
+      "Saved Company ID:",
+      localStorage.getItem(
+        "company_id"
+      )
+    );
+
+    console.log(
+      "Saved Lead ID:",
+      localStorage.getItem(
+        "lead_id"
+      )
+    );
+
+    console.log(
+      "Saved Bank ID:",
+      localStorage.getItem(
+        "bank_id"
+      )
+    );
+
+    window.dispatchEvent(
+      new Event("authChanged")
+    );
+
+    alert(
+      response?.data?.message ||
+        "Login Successful"
+    );
+
+    const currentStep =
+      user?.current_step || 1;
+
+    switch (currentStep) {
+      case 1:
+        navigate("/profile");
+        break;
+
+      case 2:
+        navigate("/company");
+        break;
+
+      case 3:
+        navigate(
+          "/company-banks"
+        );
+        break;
+
+      case 4:
+        navigate(
+          "/loan-application"
+        );
+        break;
+
+      case 5:
+        navigate(
+          "/document-upload"
+        );
+        break;
+
+      default:
+        navigate("/");
+    }
+  } catch (error) {
+    console.error(
+      "Login Error:",
+      error
+    );
+
+    alert(
+      error?.response?.data
+        ?.message ||
+        "Invalid email or password"
+    );
+  } finally {
+    setLoading(false);
+  }
+};
 
   return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4 py-10">

@@ -1,10 +1,13 @@
 import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   getUserProfile,
   updateUserProfile,
 } from "../../api";
 
 const Profile = () => {
+  const navigate = useNavigate();
+
   const [loading, setLoading] = useState(false);
 
   const [formData, setFormData] = useState({
@@ -27,6 +30,8 @@ const Profile = () => {
     try {
       const response = await getUserProfile();
 
+      console.log("Profile Response:", response.data);
+
       const data =
         response?.data?.data ||
         response?.data ||
@@ -45,6 +50,7 @@ const Profile = () => {
       });
     } catch (error) {
       console.error("Profile Fetch Error:", error);
+      console.log(error?.response?.data);
     }
   };
 
@@ -58,21 +64,46 @@ const Profile = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    console.log("Submitting Profile:", formData);
+
     try {
       setLoading(true);
 
       const response =
         await updateUserProfile(formData);
 
+      console.log(
+        "Profile Update Response:",
+        response.data
+      );
+
       alert(
         response?.data?.message ||
           "Profile Updated Successfully"
       );
+
+      navigate("/company");
     } catch (error) {
-      console.error(error);
+      console.error(
+        "Profile Update Error:",
+        error
+      );
+
+      console.log(
+        "Error Response:",
+        error?.response
+      );
+
+      console.log(
+        "Error Data:",
+        error?.response?.data
+      );
 
       alert(
         error?.response?.data?.message ||
+          JSON.stringify(
+            error?.response?.data
+          ) ||
           "Failed To Update Profile"
       );
     } finally {
@@ -89,6 +120,7 @@ const Profile = () => {
     {
       name: "gender",
       label: "Gender",
+      type: "select",
     },
     {
       name: "aadhaar_number",
@@ -123,14 +155,13 @@ const Profile = () => {
   return (
     <div className="min-h-screen bg-gray-100 py-10 px-4">
       <div className="max-w-5xl mx-auto bg-white rounded-3xl shadow-xl p-8 md:p-10">
-
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-black">
-            My Profile
+            Complete Your Profile
           </h1>
 
           <p className="text-gray-500 mt-2">
-            Update your personal information.
+            Please fill in your details to continue.
           </p>
         </div>
 
@@ -151,62 +182,61 @@ const Profile = () => {
                 {field.label}
               </label>
 
-              <input
-                type={field.type || "text"}
-                name={field.name}
-                value={formData[field.name]}
-                onChange={handleChange}
-                placeholder={`Enter ${field.label}`}
-                autoComplete="off"
-                className="
-                  w-full
-                  bg-white
-                  text-black
-                  border-2
-                  border-gray-300
-                  rounded-xl
-                  px-4
-                  py-3
-                  placeholder-gray-400
-                  outline-none
-                  transition-all
-                  duration-200
-                  focus:border-blue-500
-                  focus:ring-4
-                  focus:ring-blue-100
-                "
-                style={{
-                  color: "#000",
-                  WebkitTextFillColor: "#000",
-                }}
-              />
+              {field.type === "select" ? (
+                <select
+                  name={field.name}
+                  value={formData[field.name]}
+                  onChange={handleChange}
+                  className="w-full bg-white text-black border-2 border-gray-300 rounded-xl px-4 py-3 outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
+                >
+                  <option value="">
+                    Select Gender
+                  </option>
+
+                  <option value="Male">
+                    Male
+                  </option>
+
+                  <option value="Female">
+                    Female
+                  </option>
+
+                  <option value="Other">
+                    Other
+                  </option>
+                </select>
+              ) : (
+                <input
+                  type={
+                    field.type || "text"
+                  }
+                  name={field.name}
+                  value={
+                    formData[field.name]
+                  }
+                  onChange={
+                    handleChange
+                  }
+                  placeholder={`Enter ${field.label}`}
+                  autoComplete="off"
+                  className="w-full bg-white text-black border-2 border-gray-300 rounded-xl px-4 py-3 placeholder-gray-400 outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
+                />
+              )}
             </div>
           ))}
 
-          <div className="md:col-span-2 pt-2">
+          <div className="md:col-span-2">
             <button
               type="submit"
               disabled={loading}
-              className="
-                w-full
-                bg-blue-600
-                text-white
-                py-3
-                rounded-xl
-                font-semibold
-                hover:bg-blue-700
-                transition
-                disabled:opacity-50
-                disabled:cursor-not-allowed
-              "
+              className="w-full bg-blue-600 text-white py-3 rounded-xl font-semibold hover:bg-blue-700 disabled:opacity-50"
             >
               {loading
-                ? "Updating..."
-                : "Update Profile"}
+                ? "Saving..."
+                : "Save & Continue"}
             </button>
           </div>
         </form>
-
       </div>
     </div>
   );

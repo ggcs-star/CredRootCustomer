@@ -1,7 +1,7 @@
 // src/api/api.js
 import axios from "axios";
 
-export const BASE_URL = "http://192.168.0.110:8000/api";
+export const BASE_URL = "http://192.168.0.100:8000/api";
 
 const API = axios.create({
     baseURL: BASE_URL,
@@ -39,6 +39,69 @@ export const loginUser = (formData) =>
 export const logoutUser = () =>
     API.post("/logout");
 
+// Loan APIs
+export const applyLoan = (data) =>
+    API.post("/user/loan/apply", data);
+
+export const getLoanTypes = () =>
+    API.get("/master/loan-types");
+
+export const getEntityTypes = () =>
+    API.get("/master/entity-types");
+
+// Get Documents
+export const getLeadDocuments = () => {
+  const leadId = localStorage.getItem("lead_id");
+
+  return API.get(
+    `/master/documents?stage=final_application&lead_id=${leadId}`
+  );
+};
+
+// Upload Document
+export const uploadDocument = (data) =>
+  API.post(
+    "/documents/upload",
+    data,
+    {
+      headers: {
+        "Content-Type":
+          "multipart/form-data",
+      },
+    }
+  );
+
+// Final Submit Application
+export const finalizeApplication = (
+  leadId
+) =>
+  API.post(
+    `/documents/finalize?lead_id=${leadId}`
+  );
+
+export const getBanks = () =>
+    API.get("/master/banks");
+
+export const getDocuments = (
+    stage,
+    entity_type,
+    loan_type_id
+) =>
+    API.get("/master/documents", {
+        params: {
+            stage,
+            entity_type,
+            loan_type_id,
+        },
+    });
+
+// Company Bank APIs
+export const getCompanyBanks = () =>
+    API.get("/user/company/banks");
+
+export const createCompanyBank = (data) =>
+    API.post("/user/company/banks", data);
+
 export const getUserProfile = () =>
     API.get("/user/profile");
 
@@ -52,6 +115,12 @@ export const forgotPassword = (email) =>
 // Reset Password
 export const resetPassword = (token, passwords) =>
     API.post(`/reset-password/${token}`, passwords);
+
+export const getCompanyDetails = () =>
+    API.get("/user/company");
+
+export const createCompanyDetails = (data) =>
+    API.post("/user/company", data);
 
 // =========================
 // TOWER BASED APIs
