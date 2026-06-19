@@ -1,238 +1,179 @@
 import React from "react";
-import { Link, useNavigate, useLocation } from "react-router-dom";
 import {
-  FaTwitter,
+  FaLinkedinIn,
   FaFacebookF,
   FaInstagram,
-  FaLinkedinIn,
-  FaSkype,
+  FaYoutube,
+  FaTelegramPlane,
 } from "react-icons/fa";
-import { IoChevronForwardOutline } from "react-icons/io5";
+import { Link } from "react-router-dom";
 
 export default function Footer() {
-  const navigate = useNavigate();
-  const location = useLocation();
-
-  const pages = [
-    { label: "Home", id: "home" },
-    { label: "About", id: "about" },
-    { label: "Why CredRoot?", id: "why-credroot" },
-    { label: "Products", id: "products" },
-    { label: "FAQs", id: "faqs" },
-    { label: "Contact", id: "contact" },
-  ];
-
-  const usefulLinks = [
-    {
-      label: "Grievance Policy",
-      slug: "/grievance-policy",
-    },
-    {
-      label: "Privacy Policy",
-      slug: "/privacy-policy",
-    },
-    {
-      label: "Fair Practice Code",
-      slug: "/fair-practice-code",
-    },
-    {
-      label: "Terms and Conditions",
-      slug: "/terms-and-conditions",
-    },
-  ];
-
-  const scrollToSection = (id) => {
-    if (location.pathname !== "/") {
-      navigate("/", {
-        state: {
-          scrollTo: id,
-        },
-      });
-      return;
-    }
-
-    const element = document.getElementById(id);
-
-    if (element) {
-      const navbarHeight = 90;
-
-      const offsetTop =
-        element.getBoundingClientRect().top +
-        window.pageYOffset -
-        navbarHeight;
-
-      window.scrollTo({
-        top: offsetTop,
-        behavior: "smooth",
-      });
-    }
-  };
-
   return (
-    <footer className="mt-auto">
-      {/* Main Footer */}
-      <div className="bg-[#efefef] py-16 lg:py-20">
-        <div className="max-w-7xl mx-auto px-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 lg:gap-20">
+    <footer className="bg-gradient-to-r from-[#031B4E] via-[#042766] to-[#031B4E] text-white">
+      <div className="max-w-7xl mx-auto px-6 lg:px-8 pt-12 pb-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-10">
+          {/* Logo */}
+          <div>
+            <h2 className="text-3xl font-semibold mb-4">
+              <span className="text-white">Cred</span>
+              <span className="text-[#2D8CFF]">Root</span>
+            </h2>
 
-            {/* Logo + Address */}
-            <div className="text-center lg:text-left">
-              <button
-                onClick={() => scrollToSection("home")}
-                className="inline-block mb-6 text-left"
-              >
-                <h2 className="text-[32px] font-medium leading-none">
-                  <span className="text-black">Cred</span>
-                  <span className="text-[#1E88FF]">Root</span>
-                </h2>
-              </button>
+            <p className="text-white/80 text-sm leading-7">
+              Tech-enabled platform that facilitates MSMEs,
+              retailers, distributors & enterprises to access
+              affordable credit directly from lenders.
+            </p>
 
-              <div className="text-gray-800 text-[17px] leading-9">
-                <p>C-315, K.P. Epitome,</p>
-                <p>Nr. Siddhivinayak Tower, Makarba,</p>
-                <p>Ahmedabad - 380015,</p>
-                <p>Gujarat, India.</p>
-
-                <p className="mt-4">
-                  <span className="font-semibold">Email:</span>{" "}
-                  <a
-                    href="mailto:info@credroot.com"
-                    className="hover:text-[#1E88FF]"
-                  >
-                    info@credroot.com
-                  </a>
-                </p>
-              </div>
+            <div className="flex gap-3 mt-6">
+              <SocialIcon icon={<FaLinkedinIn />} />
+              <SocialIcon icon={<FaFacebookF />} />
+              <SocialIcon icon={<FaInstagram />} />
+              <SocialIcon icon={<FaYoutube />} />
             </div>
-
-            {/* Other Pages */}
-            <div>
-              <h3 className="text-[18px] font-bold text-black mb-8">
-                Other Pages
-              </h3>
-
-              <ul className="space-y-5">
-                {pages.map((item) => (
-                  <li key={item.id}>
-                    <button
-                      onClick={() => scrollToSection(item.id)}
-                      className="flex items-center gap-2 text-[17px] text-gray-600 hover:text-[#1E88FF] transition"
-                    >
-                      <IoChevronForwardOutline className="text-[#1E88FF]" />
-                      {item.label}
-                    </button>
-                  </li>
-                ))}
-              </ul>
-            </div>
-
-            {/* Useful Links */}
-            <div>
-              <h3 className="text-[18px] font-bold text-black mb-8">
-                Useful Links
-              </h3>
-
-              <ul className="space-y-5">
-                {usefulLinks.map((item) => (
-                  <li key={item.label}>
-                    <Link
-                      to={item.slug}
-                      className="flex items-center gap-2 text-[17px] text-gray-600 hover:text-[#1E88FF] transition"
-                    >
-                      <IoChevronForwardOutline className="text-[#1E88FF]" />
-                      {item.label}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </div>
-
-            {/* Social Networks */}
-            <div>
-              <h3 className="text-[18px] font-bold text-black mb-8">
-                Our Social Networks
-              </h3>
-
-              <p className="text-[17px] text-gray-800 leading-8 mb-8">
-                Follow us and get updates on latest news
-                <br />
-                from our Social Media handles
-              </p>
-
-              <div className="flex flex-wrap gap-4">
-                <SocialIcon
-                  icon={<FaTwitter />}
-                  href="https://twitter.com"
-                />
-
-                <SocialIcon
-                  icon={<FaFacebookF />}
-                  href="https://facebook.com"
-                />
-
-                <SocialIcon
-                  icon={<FaInstagram />}
-                  href="https://instagram.com"
-                />
-
-                <SocialIcon
-                  icon={<FaSkype />}
-                  href="https://skype.com"
-                />
-
-                <SocialIcon
-                  icon={<FaLinkedinIn />}
-                  href="https://linkedin.com"
-                />
-              </div>
-            </div>
-
           </div>
-        </div>
-      </div>
 
-      {/* Copyright */}
-      <div className="bg-black">
-        <div className="max-w-[1400px] mx-auto px-6 py-5 flex flex-col md:flex-row items-center justify-between">
-          <p className="text-white text-[17px] text-center md:text-left">
-            © Copyright{" "}
-            <span className="font-bold">
-              CredRoot
-            </span>
-            . All Rights Reserved
+          {/* Products */}
+          <div>
+            <h3 className="font-semibold text-lg mb-4">
+              Products
+            </h3>
+
+            <ul className="space-y-3 text-white/80 text-sm">
+              <li>Collateral backed Loans</li>
+              <li>Collateral Free Loans</li>
+              <li>Hybrid Loans</li>
+              <li>Project Finance</li>
+            </ul>
+          </div>
+
+          {/* Company */}
+          <div>
+            <h3 className="font-semibold text-lg mb-4">
+              Company
+            </h3>
+
+            <ul className="space-y-3 text-white/80 text-sm">
+              <li>
+                <Link to="/">About Us</Link>
+              </li>
+              <li>
+                <Link to="/">Why CredRoot?</Link>
+              </li>
+              <li>
+                <Link to="/">FAQs</Link>
+              </li>
+              <li>
+                <Link to="/">Contact</Link>
+              </li>
+            </ul>
+          </div>
+
+          {/* Legal */}
+          <div>
+            <h3 className="font-semibold text-lg mb-4">
+              Legal
+            </h3>
+
+            <ul className="space-y-3 text-white/80 text-sm">
+              <li>
+                <Link to="/privacy-policy">
+                  Privacy Policy
+                </Link>
+              </li>
+
+              <li>
+                <Link to="/terms-and-conditions">
+                  Terms & Conditions
+                </Link>
+              </li>
+
+              <li>
+                <Link to="/disclaimer">
+                  Disclaimer
+                </Link>
+              </li>
+            </ul>
+          </div>
+
+          {/* Newsletter */}
+      <div>
+  <h3 className="font-semibold text-lg mb-4">
+    Newsletter
+  </h3>
+
+  <p className="text-white/80 text-sm mb-4 leading-6">
+    Subscribe to get updates and latest news
+  </p>
+
+  <div className="flex w-full max-w-[280px]">
+    <input
+      type="email"
+      placeholder="Enter your email"
+      className="
+        flex-1
+        h-11
+        px-4
+        bg-white
+        text-gray-800
+        placeholder:text-gray-500
+        text-sm
+        max-w-[150px]
+        outline-none
+        rounded-l-md
+      "
+    />
+
+    <button
+      type="button"
+      className="
+        w-12
+        h-11
+        bg-[#2D8CFF]
+        hover:bg-[#1E7AF5]
+        flex items-center justify-center
+        text-white
+        rounded-r-md
+        transition-all
+        duration-300
+      "
+    >
+      <FaTelegramPlane size={16} />
+    </button>
+  </div>
+</div>
+        </div>
+
+        {/* Bottom */}
+        <div className="border-t border-white/15 mt-10 pt-5 flex flex-col md:flex-row items-center justify-between">
+          <p className="text-sm text-white/70">
+            © 2026 CredRoot. All rights reserved.
           </p>
 
-          {/* <p className="text-white text-[17px] mt-3 md:mt-0">
-            Website Powered By{" "}
-            <span className="text-[#1E88FF]">
-              Werge
-            </span>
-          </p> */}
+          <p className="text-sm text-white/70 mt-3 md:mt-0">
+            Made with ❤️ for MSMEs
+          </p>
         </div>
       </div>
     </footer>
   );
 }
 
-function SocialIcon({ icon, href }) {
+function SocialIcon({ icon }) {
   return (
-    <a
-      href={href}
-      target="_blank"
-      rel="noopener noreferrer"
+    <button
       className="
-        w-10 h-10
+        w-9 h-9
         rounded-full
-        bg-[#1E88FF]
-        text-white
+        border border-white/20
         flex items-center justify-center
-        text-lg
-        hover:scale-110
+        text-white
+        hover:bg-[#2D8CFF]
         transition-all
-        duration-300
       "
     >
       {icon}
-    </a>
+    </button>
   );
 }

@@ -47,7 +47,7 @@ const Signup = () => {
 
       alert(
         response?.data?.message ||
-          "OTP sent successfully."
+        "OTP sent successfully."
       );
 
       setRegisteredEmail(formData.email);
@@ -57,7 +57,7 @@ const Signup = () => {
 
       alert(
         error?.response?.data?.message ||
-          "Registration failed"
+        "Registration failed"
       );
     } finally {
       setLoading(false);
@@ -82,7 +82,7 @@ const Signup = () => {
 
       alert(
         response?.data?.message ||
-          "OTP verified successfully"
+        "OTP verified successfully"
       );
 
       setShowOtpModal(false);
@@ -93,7 +93,7 @@ const Signup = () => {
 
       alert(
         error?.response?.data?.message ||
-          "Invalid OTP"
+        "Invalid OTP"
       );
     } finally {
       setLoading(false);
@@ -237,17 +237,16 @@ const Signup = () => {
           </div>
         </div>
       </div>
-
       {/* OTP Modal */}
       {showOtpModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 px-4">
-          <div className="bg-white rounded-2xl shadow-xl w-full max-w-md p-6">
+          <div className="bg-white text-gray-900 rounded-2xl shadow-xl w-full max-w-md p-6">
 
-            <h2 className="text-2xl font-bold text-center mb-2">
+            <h2 className="text-2xl font-bold text-center mb-2 text-gray-900">
               Verify OTP
             </h2>
 
-            <p className="text-gray-500 text-center mb-6">
+            <p className="text-gray-600 text-center mb-6">
               Enter the OTP sent to
               <span className="block font-semibold text-blue-600 mt-1">
                 {registeredEmail}
@@ -260,13 +259,13 @@ const Signup = () => {
               value={otp}
               onChange={(e) => setOtp(e.target.value)}
               placeholder="Enter OTP"
-              className="w-full border-2 border-gray-300 rounded-xl px-4 py-3 mb-4 outline-none focus:border-blue-500"
+              className="w-full border-2 border-gray-300 rounded-xl px-4 py-3 mb-4 text-gray-900 placeholder-gray-400 bg-white outline-none focus:border-blue-500"
             />
 
             <div className="flex gap-3">
               <button
                 onClick={() => setShowOtpModal(false)}
-                className="flex-1 border border-gray-300 py-3 rounded-xl"
+                className="flex-1 border border-gray-300 text-gray-700 py-3 rounded-xl hover:bg-gray-100"
               >
                 Cancel
               </button>

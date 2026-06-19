@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import StepperWrapper from "../routes/MainRoutes/Stepper/components/StepperWrapper";
 import {
   getUserProfile,
   updateUserProfile,
@@ -21,6 +22,15 @@ const Profile = () => {
     state: "",
     pincode: "",
   });
+
+  // Define steps for the stepper
+  const steps = [
+    { id: 1, label: 'Personal Details', description: 'Your information', path: '/profile' },
+    { id: 2, label: 'Company Details', description: 'Business info', path: '/company' },
+    { id: 3, label: 'Bank Details', description: 'Bank account', path: '/company-banks' },
+    { id: 4, label: 'Loan Application', description: 'Apply for loan', path: '/loan-application' },
+    { id: 5, label: 'Document Upload', description: 'Upload documents', path: '/document-upload' }
+  ];
 
   useEffect(() => {
     fetchProfile();
@@ -63,6 +73,13 @@ const Profile = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    // Validate required fields
+    if (!formData.dob || !formData.gender || !formData.aadhaar_number || 
+        !formData.pan_number || !formData.occupation) {
+      alert('Please fill in all required fields');
+      return;
+    }
 
     console.log("Submitting Profile:", formData);
 
@@ -111,6 +128,13 @@ const Profile = () => {
     }
   };
 
+  const handleStepClick = (index, step) => {
+    // Only allow navigation to previous steps or current step
+    if (index <= 0) {
+      // Stay on current step
+    }
+  };
+
   const fields = [
     {
       name: "dob",
@@ -153,92 +177,88 @@ const Profile = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-gray-100 py-10 px-4">
-      <div className="max-w-5xl mx-auto bg-white rounded-3xl shadow-xl p-8 md:p-10">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-black">
-            Complete Your Profile
-          </h1>
+    <StepperWrapper
+      steps={steps}
+      currentStep={0}
+      onStepClick={handleStepClick}
+      title="Complete Your Profile"
+      subtitle="Please fill in your details to continue"
+    >
+      <form
+        onSubmit={handleSubmit}
+        className="grid md:grid-cols-2 gap-6"
+      >
+        {fields.map((field) => (
+          <div
+            key={field.name}
+            className={
+              field.name === "address"
+                ? "md:col-span-2"
+                : ""
+            }
+          >
+            <label className="block mb-2 font-medium text-gray-700">
+              {field.label} <span className="text-red-500">*</span>
+            </label>
 
-          <p className="text-gray-500 mt-2">
-            Please fill in your details to continue.
-          </p>
-        </div>
+            {field.type === "select" ? (
+              <select
+                name={field.name}
+                value={formData[field.name]}
+                onChange={handleChange}
+                required
+                className="w-full bg-white text-black border-2 border-gray-300 rounded-xl px-4 py-3 outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-100 transition-all duration-200"
+              >
+                <option value="">
+                  Select Gender
+                </option>
 
-        <form
-          onSubmit={handleSubmit}
-          className="grid md:grid-cols-2 gap-6"
-        >
-          {fields.map((field) => (
-            <div
-              key={field.name}
-              className={
-                field.name === "address"
-                  ? "md:col-span-2"
-                  : ""
-              }
-            >
-              <label className="block mb-2 font-medium text-gray-700">
-                {field.label}
-              </label>
+                <option value="Male">
+                  Male
+                </option>
 
-              {field.type === "select" ? (
-                <select
-                  name={field.name}
-                  value={formData[field.name]}
-                  onChange={handleChange}
-                  className="w-full bg-white text-black border-2 border-gray-300 rounded-xl px-4 py-3 outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
-                >
-                  <option value="">
-                    Select Gender
-                  </option>
+                <option value="Female">
+                  Female
+                </option>
 
-                  <option value="Male">
-                    Male
-                  </option>
-
-                  <option value="Female">
-                    Female
-                  </option>
-
-                  <option value="Other">
-                    Other
-                  </option>
-                </select>
-              ) : (
-                <input
-                  type={
-                    field.type || "text"
-                  }
-                  name={field.name}
-                  value={
-                    formData[field.name]
-                  }
-                  onChange={
-                    handleChange
-                  }
-                  placeholder={`Enter ${field.label}`}
-                  autoComplete="off"
-                  className="w-full bg-white text-black border-2 border-gray-300 rounded-xl px-4 py-3 placeholder-gray-400 outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
-                />
-              )}
-            </div>
-          ))}
-
-          <div className="md:col-span-2">
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full bg-blue-600 text-white py-3 rounded-xl font-semibold hover:bg-blue-700 disabled:opacity-50"
-            >
-              {loading
-                ? "Saving..."
-                : "Save & Continue"}
-            </button>
+                <option value="Other">
+                  Other
+                </option>
+              </select>
+            ) : (
+              <input
+                type={
+                  field.type || "text"
+                }
+                name={field.name}
+                value={
+                  formData[field.name]
+                }
+                onChange={
+                  handleChange
+                }
+                placeholder={`Enter ${field.label}`}
+                autoComplete="off"
+                required={field.name !== 'address' && field.name !== 'city' && field.name !== 'state' && field.name !== 'pincode'}
+                className="w-full bg-white text-black border-2 border-gray-300 rounded-xl px-4 py-3 placeholder-gray-400 outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-100 transition-all duration-200"
+              />
+            )}
           </div>
-        </form>
-      </div>
-    </div>
+        ))}
+
+        <div className="md:col-span-2 flex justify-end">
+          <button
+            type="submit"
+            disabled={loading}
+            className="px-8 py-3 bg-blue-600 text-white rounded-xl font-semibold hover:bg-blue-700 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
+          >
+            {loading
+              ? "Saving..."
+              : "Save & Continue →"}
+          </button>
+        </div>
+      </form>
+    </StepperWrapper>
   );
 };
 
