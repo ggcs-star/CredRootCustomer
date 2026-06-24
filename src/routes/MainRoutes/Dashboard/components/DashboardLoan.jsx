@@ -1,25 +1,55 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import StepperWrapper from "../../routes/MainRoutes/Stepper/components/StepperWrapper";
 import {
   applyLoan,
   getLoanTypes,
   getBanks,
   getCompanyDetails,
   getLoanApplication,
-} from "../../../api";
+} from "../../../../../api";
 
-const LoanApplication = () => {
+// Shimmer Effect Component
+const LoanShimmer = () => {
+  return (
+    <div>
+      <div className="mb-6">
+        <div className="h-8 bg-gray-200 rounded w-1/3 animate-pulse"></div>
+        <div className="h-4 bg-gray-200 rounded w-1/2 mt-2 animate-pulse"></div>
+      </div>
+
+      <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
+        <div className="grid md:grid-cols-2 gap-6">
+          {/* Shimmer fields */}
+          <div>
+            <div className="h-5 bg-gray-200 rounded w-1/3 mb-2 animate-pulse"></div>
+            <div className="h-12 bg-gray-200 rounded-xl w-full animate-pulse"></div>
+            <div className="h-3 bg-gray-200 rounded w-1/2 mt-1 animate-pulse"></div>
+          </div>
+          <div>
+            <div className="h-5 bg-gray-200 rounded w-1/3 mb-2 animate-pulse"></div>
+            <div className="h-12 bg-gray-200 rounded-xl w-full animate-pulse"></div>
+          </div>
+          <div className="md:col-span-2">
+            <div className="h-5 bg-gray-200 rounded w-1/3 mb-2 animate-pulse"></div>
+            <div className="h-12 bg-gray-200 rounded-xl w-full animate-pulse"></div>
+          </div>
+          
+          <div className="md:col-span-2">
+            <div className="h-12 bg-gray-200 rounded-xl w-full animate-pulse"></div>
+          </div>
+          
+          <div className="md:col-span-2 flex justify-end gap-4">
+            <div className="h-12 bg-gray-200 rounded-xl w-24 animate-pulse"></div>
+            <div className="h-12 bg-gray-200 rounded-xl w-32 animate-pulse"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const DashboardLoan = () => {
   const navigate = useNavigate();
-
-  // Define steps for the stepper
-  const steps = [
-    { id: 1, label: 'Personal Details', description: 'Your information', path: '/profile' },
-    { id: 2, label: 'Company Details', description: 'Business info', path: '/company' },
-    { id: 3, label: 'Bank Details', description: 'Bank account', path: '/company-banks' },
-    { id: 4, label: 'Loan Application', description: 'Apply for loan', path: '/loan-application' },
-    { id: 5, label: 'Document Upload', description: 'Upload documents', path: '/document-upload' }
-  ];
 
   const [loading, setLoading] = useState(false);
   const [fetchLoading, setFetchLoading] = useState(true);
@@ -90,7 +120,7 @@ const LoanApplication = () => {
       } else {
         console.warn("❌ Company ID not found");
         alert("Company not found. Please complete your company profile first.");
-        navigate("/company");
+        navigate("/dashboard/company");
       }
     } catch (error) {
       console.error("❌ Error fetching company ID:", error);
@@ -105,7 +135,7 @@ const LoanApplication = () => {
         }));
       } else {
         alert("Company not found. Please complete your company profile first.");
-        navigate("/company");
+        navigate("/dashboard/company");
       }
     }
   };
@@ -221,7 +251,7 @@ const LoanApplication = () => {
     // Validate company_id exists
     if (!formData.company_id) {
       alert("Company ID not found. Please complete your company profile first.");
-      navigate("/company");
+      navigate("/dashboard/company");
       return;
     }
 
@@ -274,7 +304,7 @@ const LoanApplication = () => {
         (isEditMode ? "Loan Application Updated Successfully" : "Loan Applied Successfully")
       );
 
-      navigate("/document-upload");
+      navigate("/dashboard/loan-application");
     } catch (error) {
       console.error("❌ Loan Application Error:", error);
 
@@ -299,165 +329,146 @@ const LoanApplication = () => {
     }
   };
 
-  const handleStepClick = (index, step) => {
-    // Allow navigation to previous steps
-    if (index <= 3) {
-      if (step.path) {
-        navigate(step.path);
-      }
-    }
-  };
-
-  // Show loading state while fetching data
+  // Show shimmer while fetching data
   if (fetchLoading) {
-    return (
-      <StepperWrapper
-        steps={steps}
-        currentStep={3}
-        onStepClick={handleStepClick}
-        title="Loan Application"
-        subtitle="Loading loan application..."
-      >
-        <div className="flex justify-center items-center py-12">
-          <div className="text-center">
-            <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mb-4"></div>
-            <p className="text-gray-600">Loading loan application...</p>
-          </div>
-        </div>
-      </StepperWrapper>
-    );
+    return <LoanShimmer />;
   }
 
   return (
-    <StepperWrapper
-      steps={steps}
-      currentStep={3}
-      onStepClick={handleStepClick}
-      title={isEditMode ? "Edit Loan Application" : "Loan Application"}
-      subtitle={isEditMode ? "Update your business loan application" : "Apply for your business loan"}
-    >
-      <form onSubmit={handleSubmit} className="grid md:grid-cols-2 gap-6">
-        {/* Hidden fields */}
-        <input
-          type="hidden"
-          name="company_id"
-          value={formData.company_id}
-        />
+    <div>
+      <div className="mb-6">
+        <h2 className="text-2xl font-bold text-gray-900">
+          {isEditMode ? "Edit Loan Application" : "Loan Application"}
+        </h2>
+        <p className="text-gray-600 mt-1">
+          {isEditMode ? "Update your business loan application" : "Apply for your business loan"}
+        </p>
+      </div>
 
-        {leadId && (
+      <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
+        <form onSubmit={handleSubmit} className="grid md:grid-cols-2 gap-6">
+          {/* Hidden fields */}
           <input
             type="hidden"
-            name="id"
-            value={leadId}
+            name="company_id"
+            value={formData.company_id}
           />
-        )}
 
-        <div>
-          <label className="block mb-2 font-medium text-gray-700">
-            Loan Amount (₹) <span className="text-red-500">*</span>
-          </label>
+          {leadId && (
+            <input
+              type="hidden"
+              name="id"
+              value={leadId}
+            />
+          )}
 
-          <input
-            type="number"
-            name="loan_amount"
-            value={formData.loan_amount}
-            onChange={handleChange}
-            placeholder="Enter Loan Amount"
-            min="1000"
-            step="1000"
-            className="w-full border-2 border-gray-300 rounded-xl px-4 py-3 bg-white text-black focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200"
-            required
-          />
-          <p className="text-xs text-gray-500 mt-1">Enter loan amount in INR (minimum ₹1,000)</p>
-        </div>
+          <div>
+            <label className="block mb-2 font-medium text-gray-700">
+              Loan Amount (₹) <span className="text-red-500">*</span>
+            </label>
 
-        <div>
-          <label className="block mb-2 font-medium text-gray-700">
-            Bank <span className="text-red-500">*</span>
-          </label>
-
-          <select
-            name="bank_id"
-            value={formData.bank_id}
-            onChange={handleChange}
-            className="w-full border-2 border-gray-300 rounded-xl px-4 py-3 bg-white text-black focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200"
-            required
-          >
-            <option value="">
-              Select Bank
-            </option>
-
-            {banks.length > 0 ? (
-              banks.map((bank) => (
-                <option key={bank.id} value={bank.id}>
-                  {bank.name || bank.bank_name || `Bank ${bank.id}`}
-                </option>
-              ))
-            ) : (
-              <option value="" disabled>No banks available</option>
-            )}
-          </select>
-        </div>
-
-        <div className="md:col-span-2">
-          <label className="block mb-2 font-medium text-gray-700">
-            Loan Type <span className="text-red-500">*</span>
-          </label>
-
-          <select
-            name="loan_type_id"
-            value={formData.loan_type_id}
-            onChange={handleChange}
-            className="w-full border-2 border-gray-300 rounded-xl px-4 py-3 bg-white text-black focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200"
-            required
-          >
-            <option value="">
-              Select Loan Type
-            </option>
-
-            {loanTypes.length > 0 ? (
-              loanTypes.map((loan) => (
-                <option key={loan.id} value={loan.id}>
-                  {loan.name || `Loan Type ${loan.id}`}
-                </option>
-              ))
-            ) : (
-              <option value="" disabled>No loan types available</option>
-            )}
-          </select>
-        </div>
-
-        {/* Display company info for reference */}
-        {formData.company_id && (
-          <div className="md:col-span-2 mt-2 p-3 bg-blue-50 rounded-lg border border-blue-200">
-            <p className="text-sm text-gray-600">
-              <span className="font-semibold">Company ID:</span> {formData.company_id}
-            </p>
-            <p className="text-xs text-gray-500 mt-1">
-              {isEditMode ? "Updating existing loan application" : "Your loan application will be linked to this company"}
-            </p>
+            <input
+              type="number"
+              name="loan_amount"
+              value={formData.loan_amount}
+              onChange={handleChange}
+              placeholder="Enter Loan Amount"
+              min="1000"
+              step="1000"
+              className="w-full border-2 border-gray-300 rounded-xl px-4 py-3 bg-white text-black focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200"
+              required
+            />
+            <p className="text-xs text-gray-500 mt-1">Enter loan amount in INR (minimum ₹1,000)</p>
           </div>
-        )}
 
-        <div className="md:col-span-2 flex justify-between">
-          <button
-            type="button"
-            onClick={() => navigate('/company-banks')}
-            className="px-8 py-3 bg-gray-200 text-gray-700 rounded-xl font-semibold hover:bg-gray-300 transition-colors"
-          >
-            ← Back
-          </button>
-          <button
-            type="submit"
-            disabled={loading}
-            className="px-8 py-3 bg-blue-600 text-white rounded-xl font-semibold hover:bg-blue-700 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
-          >
-            {loading ? "Submitting..." : isEditMode ? "Update & Continue →" : "Apply Loan & Continue →"}
-          </button>
-        </div>
-      </form>
-    </StepperWrapper>
+          <div>
+            <label className="block mb-2 font-medium text-gray-700">
+              Bank <span className="text-red-500">*</span>
+            </label>
+
+            <select
+              name="bank_id"
+              value={formData.bank_id}
+              onChange={handleChange}
+              className="w-full border-2 border-gray-300 rounded-xl px-4 py-3 bg-white text-black focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200"
+              required
+            >
+              <option value="">
+                Select Bank
+              </option>
+
+              {banks.length > 0 ? (
+                banks.map((bank) => (
+                  <option key={bank.id} value={bank.id}>
+                    {bank.name || bank.bank_name || `Bank ${bank.id}`}
+                  </option>
+                ))
+              ) : (
+                <option value="" disabled>No banks available</option>
+              )}
+            </select>
+          </div>
+
+          <div className="md:col-span-2">
+            <label className="block mb-2 font-medium text-gray-700">
+              Loan Type <span className="text-red-500">*</span>
+            </label>
+
+            <select
+              name="loan_type_id"
+              value={formData.loan_type_id}
+              onChange={handleChange}
+              className="w-full border-2 border-gray-300 rounded-xl px-4 py-3 bg-white text-black focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200"
+              required
+            >
+              <option value="">
+                Select Loan Type
+              </option>
+
+              {loanTypes.length > 0 ? (
+                loanTypes.map((loan) => (
+                  <option key={loan.id} value={loan.id}>
+                    {loan.name || `Loan Type ${loan.id}`}
+                  </option>
+                ))
+              ) : (
+                <option value="" disabled>No loan types available</option>
+              )}
+            </select>
+          </div>
+
+          {/* Display company info for reference */}
+          {/* {formData.company_id && (
+            <div className="md:col-span-2 mt-2 p-3 bg-blue-50 rounded-lg border border-blue-200">
+              <p className="text-sm text-gray-600">
+                <span className="font-semibold">Company ID:</span> {formData.company_id}
+              </p>
+              <p className="text-xs text-gray-500 mt-1">
+                {isEditMode ? "Updating existing loan application" : "Your loan application will be linked to this company"}
+              </p>
+            </div>
+          )} */}
+
+          <div className="md:col-span-2 flex justify-end gap-4">
+            <button
+              type="button"
+              onClick={() => navigate('/dashboard')}
+              className="px-8 py-3 bg-gray-200 text-gray-700 rounded-xl font-semibold hover:bg-gray-300 transition-colors"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              disabled={loading}
+              className="px-8 py-3 bg-blue-600 text-white rounded-xl font-semibold hover:bg-blue-700 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
+            >
+              {loading ? "Submitting..." : isEditMode ? "Update" : "Apply Loan"}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
   );
 };
 
-export default LoanApplication;
+export default DashboardLoan;

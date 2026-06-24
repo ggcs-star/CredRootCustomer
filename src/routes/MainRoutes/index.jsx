@@ -11,6 +11,12 @@ import Company from "../../container/Company";
 import CompanyBanks from "../../container/CompanyBanks";
 import LoanApplication from "../../container/LoanApplication";
 import DocumentUpload from "../../container/DocumentUpload";
+import Dashboard from "./Dashboard";
+import DashboardProfile from "./Dashboard/components/DashboardProfile";
+import DashboardCompany from "./Dashboard/components/DashboardCompany";
+import DashboardBank from "./Dashboard/components/DashboardBank";
+import DashboardLoan from "./Dashboard/components/DashboardLoan";
+import DashboardDocuments from "./Dashboard/components/DashboardDocuments";
 
 export default function MainRoutes(props) {
     const routes = useRoutes([
@@ -34,7 +40,6 @@ export default function MainRoutes(props) {
                 </ProtectedRoute>
             ),
         },
-
         {
             path: "/company",
             element: (
@@ -43,8 +48,6 @@ export default function MainRoutes(props) {
                 </ProtectedRoute>
             ),
         },
-     
-
         {
             path: "/company-banks",
             element: (
@@ -53,8 +56,7 @@ export default function MainRoutes(props) {
                 </ProtectedRoute>
             ),
         },
-
-           {
+        {
             path: "/loan-application",
             element: (
                 <ProtectedRoute>
@@ -62,14 +64,64 @@ export default function MainRoutes(props) {
                 </ProtectedRoute>
             ),
         },
-
         {
             path: "/document-upload",
             element: (
                 <ProtectedRoute>
-                    <DocumentUpload/>
+                    <DocumentUpload />
                 </ProtectedRoute>
             ),
+        },
+        // Dashboard with nested routes
+        {
+            path: "/dashboard",
+            element: (
+                <ProtectedRoute>
+                    <Dashboard />
+                </ProtectedRoute>
+            ),
+            children: [
+                {
+                    path: "profile",
+                    element: (
+                        <ProtectedRoute>
+                            <DashboardProfile />
+                        </ProtectedRoute>
+                    ),
+                },
+                {
+                    path: "company",
+                    element: (
+                        <ProtectedRoute>
+                            <DashboardCompany />
+                        </ProtectedRoute>
+                    ),
+                },
+                {
+            path: "company-banks",
+                    element: (
+                        <ProtectedRoute>
+                            <DashboardBank />
+                        </ProtectedRoute>
+                    ),
+                },
+                {
+            path: "loan-application",
+                    element: (
+                        <ProtectedRoute>
+                            <DashboardLoan />
+                        </ProtectedRoute>
+                    ),
+                },
+                {
+                    path: "document-upload",
+                    element: (
+                        <ProtectedRoute>
+                            <DashboardDocuments />
+                        </ProtectedRoute>
+                    ),
+                },
+            ],
         },
     ]);
 

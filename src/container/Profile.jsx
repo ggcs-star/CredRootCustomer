@@ -10,6 +10,8 @@ const Profile = () => {
   const navigate = useNavigate();
 
   const [loading, setLoading] = useState(false);
+  const [profileLoading, setProfileLoading] =
+    useState(true);
 
   const [formData, setFormData] = useState({
     dob: "",
@@ -23,13 +25,37 @@ const Profile = () => {
     pincode: "",
   });
 
-  // Define steps for the stepper
   const steps = [
-    { id: 1, label: 'Personal Details', description: 'Your information', path: '/profile' },
-    { id: 2, label: 'Company Details', description: 'Business info', path: '/company' },
-    { id: 3, label: 'Bank Details', description: 'Bank account', path: '/company-banks' },
-    { id: 4, label: 'Loan Application', description: 'Apply for loan', path: '/loan-application' },
-    { id: 5, label: 'Document Upload', description: 'Upload documents', path: '/document-upload' }
+    {
+      id: 1,
+      label: "Personal Details",
+      description: "Your information",
+      path: "/profile",
+    },
+    {
+      id: 2,
+      label: "Company Details",
+      description: "Business info",
+      path: "/company",
+    },
+    {
+      id: 3,
+      label: "Bank Details",
+      description: "Bank account",
+      path: "/company-banks",
+    },
+    {
+      id: 4,
+      label: "Loan Application",
+      description: "Apply for loan",
+      path: "/loan-application",
+    },
+    {
+      id: 5,
+      label: "Document Upload",
+      description: "Upload documents",
+      path: "/document-upload",
+    },
   ];
 
   useEffect(() => {
@@ -38,56 +64,84 @@ const Profile = () => {
 
   const fetchProfile = async () => {
     try {
-      const response = await getUserProfile();
+      setProfileLoading(true);
 
-      console.log("Profile Response:", response.data);
+      const response =
+        await getUserProfile();
 
-      const data =
-        response?.data?.data ||
-        response?.data ||
-        {};
+      console.log(
+        "Profile API Response:",
+        response.data
+      );
+
+      const profile =
+        response?.data?.data?.profile || {};
 
       setFormData({
-        dob: data.dob || "",
-        gender: data.gender || "",
-        aadhaar_number: data.aadhaar_number || "",
-        pan_number: data.pan_number || "",
-        occupation: data.occupation || "",
-        address: data.address || "",
-        city: data.city || "",
-        state: data.state || "",
-        pincode: data.pincode || "",
+        dob: profile.dob || "",
+        gender: profile.gender || "",
+        aadhaar_number:
+          profile.aadhaar_number || "",
+        pan_number:
+          profile.pan_number || "",
+        occupation:
+          profile.occupation || "",
+        address: profile.address || "",
+        city: profile.city || "",
+        state: profile.state || "",
+        pincode: profile.pincode || "",
       });
     } catch (error) {
-      console.error("Profile Fetch Error:", error);
-      console.log(error?.response?.data);
+      console.error(
+        "Profile Fetch Error:",
+        error
+      );
+
+      console.log(
+        "Profile Error Response:",
+        error?.response?.data
+      );
+    } finally {
+      setProfileLoading(false);
     }
   };
 
   const handleChange = (e) => {
     setFormData((prev) => ({
       ...prev,
-      [e.target.name]: e.target.value,
+      [e.target.name]:
+        e.target.value,
     }));
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Validate required fields
-    if (!formData.dob || !formData.gender || !formData.aadhaar_number || 
-        !formData.pan_number || !formData.occupation) {
-      alert('Please fill in all required fields');
+    if (
+      !formData.dob ||
+      !formData.gender ||
+      !formData.aadhaar_number ||
+      !formData.pan_number ||
+      !formData.occupation
+    ) {
+      alert(
+        "Please fill in all required fields"
+      );
       return;
     }
-
-    console.log("Submitting Profile:", formData);
 
     try {
       setLoading(true);
 
+      console.log(
+        "Submitting Profile:",
+        formData
+      );
+
       const response =
-        await updateUserProfile(formData);
+        await updateUserProfile(
+          formData
+        );
 
       console.log(
         "Profile Update Response:",
@@ -107,20 +161,12 @@ const Profile = () => {
       );
 
       console.log(
-        "Error Response:",
-        error?.response
-      );
-
-      console.log(
-        "Error Data:",
+        "Update Error Response:",
         error?.response?.data
       );
 
       alert(
         error?.response?.data?.message ||
-          JSON.stringify(
-            error?.response?.data
-          ) ||
           "Failed To Update Profile"
       );
     } finally {
@@ -128,10 +174,12 @@ const Profile = () => {
     }
   };
 
-  const handleStepClick = (index, step) => {
-    // Only allow navigation to previous steps or current step
+  const handleStepClick = (
+    index,
+    step
+  ) => {
     if (index <= 0) {
-      // Stay on current step
+      return;
     }
   };
 
@@ -176,6 +224,16 @@ const Profile = () => {
     },
   ];
 
+  if (profileLoading) {
+    return (
+      <div className="flex justify-center items-center h-screen">
+        <div className="text-lg font-medium">
+          Loading Profile...
+        </div>
+      </div>
+    );
+  }
+
   return (
     <StepperWrapper
       steps={steps}
@@ -198,14 +256,25 @@ const Profile = () => {
             }
           >
             <label className="block mb-2 font-medium text-gray-700">
-              {field.label} <span className="text-red-500">*</span>
+              {field.label}
+              <span className="text-red-500">
+                {" "}
+                *
+              </span>
             </label>
 
-            {field.type === "select" ? (
+            {field.type ===
+            "select" ? (
               <select
                 name={field.name}
-                value={formData[field.name]}
-                onChange={handleChange}
+                value={
+                  formData[
+                    field.name
+                  ]
+                }
+                onChange={
+                  handleChange
+                }
                 required
                 className="w-full bg-white text-black border-2 border-gray-300 rounded-xl px-4 py-3 outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-100 transition-all duration-200"
               >
@@ -228,18 +297,30 @@ const Profile = () => {
             ) : (
               <input
                 type={
-                  field.type || "text"
+                  field.type ||
+                  "text"
                 }
                 name={field.name}
                 value={
-                  formData[field.name]
+                  formData[
+                    field.name
+                  ]
                 }
                 onChange={
                   handleChange
                 }
                 placeholder={`Enter ${field.label}`}
                 autoComplete="off"
-                required={field.name !== 'address' && field.name !== 'city' && field.name !== 'state' && field.name !== 'pincode'}
+                required={
+                  field.name !==
+                    "address" &&
+                  field.name !==
+                    "city" &&
+                  field.name !==
+                    "state" &&
+                  field.name !==
+                    "pincode"
+                }
                 className="w-full bg-white text-black border-2 border-gray-300 rounded-xl px-4 py-3 placeholder-gray-400 outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-100 transition-all duration-200"
               />
             )}

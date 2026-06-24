@@ -4,78 +4,75 @@ import React, {
     useRef
 } from "react";
 import { useNavigate } from "react-router-dom";
-import StepperWrapper from "../../routes/MainRoutes/Stepper/components/StepperWrapper";
 
 import {
     getLeadDocuments,
     uploadDocument,
     finalizeApplication,
-} from "../../../api";
+} from "../../../../../api";
 
 // Shimmer Effect Component
-const Shimmer = () => {
+const DocumentShimmer = () => {
     return (
-        <div className="animate-pulse">
-            <div className="space-y-6">
-                {[1, 2, 3, 4].map((item) => (
-                    <div key={item} className="border border-gray-200 rounded-2xl p-6">
-                        <div className="flex flex-col lg:flex-row justify-between gap-5">
-                            <div className="flex-1">
-                                <div className="h-7 bg-gray-200 rounded w-1/3 mb-3"></div>
-                                <div className="h-4 bg-gray-200 rounded w-2/3 mb-2"></div>
-                                <div className="h-4 bg-gray-200 rounded w-1/2"></div>
+        <div>
+            <div className="mb-6">
+                <div className="h-8 bg-gray-200 rounded w-1/3 animate-pulse"></div>
+                <div className="h-4 bg-gray-200 rounded w-1/2 mt-2 animate-pulse"></div>
+            </div>
+
+            <div className="animate-pulse">
+                <div className="space-y-6">
+                    {[1, 2, 3, 4].map((item) => (
+                        <div key={item} className="border border-gray-200 rounded-2xl p-6 bg-white">
+                            <div className="flex flex-col lg:flex-row justify-between gap-5">
+                                <div className="flex-1">
+                                    <div className="h-7 bg-gray-200 rounded w-1/3 mb-3"></div>
+                                    <div className="h-4 bg-gray-200 rounded w-2/3 mb-2"></div>
+                                    <div className="h-4 bg-gray-200 rounded w-1/2"></div>
+                                    
+                                    <div className="mt-3 space-y-2">
+                                        <div className="h-4 bg-gray-200 rounded w-1/4"></div>
+                                        <div className="h-4 bg-gray-200 rounded w-1/3"></div>
+                                        <div className="h-4 bg-gray-200 rounded w-1/4"></div>
+                                    </div>
+                                </div>
                                 
-                                <div className="mt-3 space-y-2">
-                                    <div className="h-4 bg-gray-200 rounded w-1/4"></div>
-                                    <div className="h-4 bg-gray-200 rounded w-1/3"></div>
-                                    <div className="h-4 bg-gray-200 rounded w-1/4"></div>
+                                <div>
+                                    <div className="h-6 bg-gray-200 rounded-full w-20"></div>
+                                    <div className="mt-3 h-6 bg-gray-200 rounded-full w-16"></div>
                                 </div>
                             </div>
                             
-                            <div>
-                                <div className="h-6 bg-gray-200 rounded-full w-20"></div>
-                                <div className="mt-3 h-6 bg-gray-200 rounded-full w-16"></div>
+                            <div className="mt-6">
+                                <div className="flex flex-col md:flex-row gap-4 mb-3">
+                                    <div className="flex-1">
+                                        <div className="h-4 bg-gray-200 rounded w-1/4 mb-2"></div>
+                                        <div className="h-12 bg-gray-200 rounded-xl w-full"></div>
+                                    </div>
+                                </div>
                             </div>
-                        </div>
-                        
-                        <div className="mt-6">
-                            <div className="flex flex-col md:flex-row gap-4 mb-3">
-                                <div className="flex-1">
-                                    <div className="h-4 bg-gray-200 rounded w-1/4 mb-2"></div>
-                                    <div className="h-12 bg-gray-200 rounded-xl w-full"></div>
+                            
+                            <div className="mt-5">
+                                <div className="h-5 bg-gray-200 rounded w-1/4 mb-3"></div>
+                                <div className="border rounded-lg p-3 bg-gray-50">
+                                    <div className="h-4 bg-gray-200 rounded w-2/3"></div>
                                 </div>
                             </div>
                         </div>
-                        
-                        <div className="mt-5">
-                            <div className="h-5 bg-gray-200 rounded w-1/4 mb-3"></div>
-                            <div className="border rounded-lg p-3 bg-gray-50">
-                                <div className="h-4 bg-gray-200 rounded w-2/3"></div>
-                            </div>
-                        </div>
-                    </div>
-                ))}
-            </div>
-            
-            <div className="mt-8">
-                <div className="h-12 bg-gray-200 rounded-xl w-full"></div>
+                    ))}
+                </div>
+                
+                <div className="mt-8">
+                    <div className="h-12 bg-gray-200 rounded-xl w-full"></div>
+                </div>
             </div>
         </div>
     );
 };
 
-const DocumentUpload = () => {
+const DashboardDocuments = () => {
     const navigate = useNavigate();
     const fileInputRef = useRef({});
-
-    // Define steps for the stepper
-    const steps = [
-        { id: 1, label: 'Personal Details', description: 'Your information', path: '/profile' },
-        { id: 2, label: 'Company Details', description: 'Business info', path: '/company' },
-        { id: 3, label: 'Bank Details', description: 'Bank account', path: '/company-banks' },
-        { id: 4, label: 'Loan Application', description: 'Apply for loan', path: '/loan-application' },
-        { id: 5, label: 'Document Upload', description: 'Upload documents', path: '/document-upload' }
-    ];
 
     const [loading, setLoading] = useState(true);
     const [uploadingId, setUploadingId] = useState(null);
@@ -438,40 +435,21 @@ const DocumentUpload = () => {
         return hasValidFileName || hasValidOriginalName || hasValidName || hasValidUrl || hasValidId;
     };
 
-    const handleStepClick = (index, step) => {
-        // Allow navigation to previous steps
-        if (index <= 4) {
-            if (step.path) {
-                navigate(step.path);
-            }
-        }
-    };
-
+    // Show shimmer while fetching data
     if (loading) {
-        return (
-            <StepperWrapper
-                steps={steps}
-                currentStep={4}
-                onStepClick={handleStepClick}
-                title="Upload Documents"
-                subtitle="Loading documents..."
-            >
-                <Shimmer />
-            </StepperWrapper>
-        );
+        return <DocumentShimmer />;
     }
 
     return (
-        <StepperWrapper
-            steps={steps}
-            currentStep={4}
-            onStepClick={handleStepClick}
-            title="Upload Documents"
-            subtitle="Upload all required documents to proceed"
-        >
+        <div>
+            <div className="mb-6">
+                <h2 className="text-2xl font-bold text-gray-900">Upload Documents</h2>
+                <p className="text-gray-600 mt-1">Upload all required documents to proceed</p>
+            </div>
+
             <div className="space-y-6">
                 {documents.length === 0 ? (
-                    <div className="text-center py-10 text-gray-500">
+                    <div className="text-center py-10 text-gray-500 bg-white rounded-xl shadow-sm p-6 border border-gray-100">
                         <p>No documents found.</p>
                     </div>
                 ) : (
@@ -485,7 +463,7 @@ const DocumentUpload = () => {
                         const requiredSides = getRequiredSides(doc);
 
                         return (
-                            <div key={doc.id} className="border border-gray-200 rounded-2xl p-6">
+                            <div key={doc.id} className="border border-gray-200 rounded-2xl p-6 bg-white shadow-sm">
                                 <div className="flex flex-col lg:flex-row justify-between gap-5">
                                     <div className="flex-1">
                                         <h3 className="text-xl font-semibold text-black">{doc.name}</h3>
@@ -692,8 +670,8 @@ const DocumentUpload = () => {
                     )}
                 </button>
             </div>
-        </StepperWrapper>
+        </div>
     );
 };
 
-export default DocumentUpload;
+export default DashboardDocuments;

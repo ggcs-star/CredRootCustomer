@@ -9,6 +9,7 @@ export default function NavbarContent() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [user, setUser] = useState(null);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
   const navigate = useNavigate();
   const location = useLocation();
@@ -70,6 +71,7 @@ export default function NavbarContent() {
       
       // Close mobile menu
       setMenuOpen(false);
+      setIsDropdownOpen(false);
       
       // Navigate to login page
       navigate("/login");
@@ -82,6 +84,7 @@ export default function NavbarContent() {
       setUser(null);
       window.dispatchEvent(new Event("authChanged"));
       setMenuOpen(false);
+      setIsDropdownOpen(false);
       navigate("/login");
     } finally {
       setIsLoggingOut(false);
@@ -126,13 +129,21 @@ export default function NavbarContent() {
     }
   };
 
+  const navigateToDashboard = () => {
+    setIsDropdownOpen(false);
+    navigate("/dashboard");
+  };
+
+  // Determine max width class based on user login status
+  const maxWidthClass = user ? "max-w-8xl" : "max-w-7xl";
+
   return (
     <header
       className={`w-full z-50 border-b border-gray-200 bg-[#f3f3f3] ${
         isScrolled ? "fixed top-0 left-0 shadow-md" : "relative"
       }`}
     >
-      <nav className="max-w-7xl mx-auto px-6 h-[90px] flex items-center justify-between">
+      <nav className={`${maxWidthClass} mx-auto px-6 h-[90px] flex items-center justify-between`}>
         {/* Logo */}
         <button
           onClick={() => scrollToSection("home")}
@@ -157,35 +168,87 @@ export default function NavbarContent() {
                 </button>
               </li>
             ))}
-
-            {/* <li>
-              <button className="flex items-center gap-1 hover:text-blue-600 transition">
-                More
-                <IoChevronDownOutline />
-              </button>
-            </li> */}
           </ul>
 
           {/* Auth Section */}
           {user ? (
-            <div className="flex items-center gap-4">
-              <div className="flex items-center gap-2 bg-white px-4 py-2 rounded-lg border">
-                <div className="w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center font-semibold">
-                  {user?.name?.charAt(0)?.toUpperCase() || "U"}
-                </div>
+            <div className="flex items-center gap-4 relative">
+              {/* User Profile with Dropdown */}
+              <div className="relative">
+                <button
+                  onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                  className="flex items-center gap-2 bg-white px-4 py-2 rounded-lg border hover:shadow-md transition-shadow"
+                >
+                  <div className="w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center font-semibold">
+                    {user?.name?.charAt(0)?.toUpperCase() || "U"}
+                  </div>
 
-                <span className="font-medium text-gray-800">
-                  {user?.name || "User"}
-                </span>
+                  <span className="font-medium text-gray-800">
+                    {user?.name || "User"}
+                  </span>
+                  
+                  <IoChevronDownOutline 
+                    className={`text-gray-500 transition-transform duration-200 ${
+                      isDropdownOpen ? "rotate-180" : ""
+                    }`}
+                  />
+                </button>
+
+                {/* Dropdown Menu */}
+                {isDropdownOpen && (
+                  <div className="absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-lg border border-gray-200 z-50">
+                    <div className="px-4 py-2 border-b border-gray-100">
+                      <p className="text-sm font-medium text-gray-900">
+                        {user?.name || "User"}
+                      </p>
+                      <p className="text-xs text-gray-500 truncate">
+                        {user?.email || "user@example.com"}
+                      </p>
+                    </div>
+
+                    <button
+                      onClick={navigateToDashboard}
+                      className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition-colors flex items-center gap-2"
+                    >
+                      <svg 
+                        className="w-4 h-4" 
+                        fill="none" 
+                        stroke="currentColor" 
+                        viewBox="0 0 24 24"
+                      >
+                        <path 
+                          strokeLinecap="round" 
+                          strokeLinejoin="round" 
+                          strokeWidth={2} 
+                          d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zm10 0a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zm10 0a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" 
+                        />
+                      </svg>
+                      Dashboard
+                    </button>
+
+                    <button
+                      onClick={handleLogout}
+                      disabled={isLoggingOut}
+                      className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors flex items-center gap-2"
+                    >
+                      <svg 
+                        className="w-4 h-4" 
+                        fill="none" 
+                        stroke="currentColor" 
+                        viewBox="0 0 24 24"
+                      >
+                        <path 
+                          strokeLinecap="round" 
+                          strokeLinejoin="round" 
+                          strokeWidth={2} 
+                          d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" 
+                        />
+                      </svg>
+                      {isLoggingOut ? "Logging out..." : "Logout"}
+                    </button>
+                  </div>
+                )}
               </div>
-
-              <button
-                onClick={handleLogout}
-                disabled={isLoggingOut}
-                className="px-5 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {isLoggingOut ? "Logging out..." : "Logout"}
-              </button>
             </div>
           ) : (
             <>
@@ -242,8 +305,35 @@ export default function NavbarContent() {
                       <p className="font-semibold text-gray-800">
                         {user?.name || "User"}
                       </p>
+                      <p className="text-xs text-gray-500 truncate">
+                        {user?.email || "user@example.com"}
+                      </p>
                     </div>
                   </div>
+
+                  {/* Dashboard Link in Mobile Menu */}
+                  <button
+                    onClick={() => {
+                      setMenuOpen(false);
+                      navigate("/dashboard");
+                    }}
+                    className="w-full text-left bg-blue-50 text-blue-600 rounded-lg py-3 px-4 mb-2 hover:bg-blue-100 transition flex items-center gap-2"
+                  >
+                    <svg 
+                      className="w-5 h-5" 
+                      fill="none" 
+                      stroke="currentColor" 
+                      viewBox="0 0 24 24"
+                    >
+                      <path 
+                        strokeLinecap="round" 
+                        strokeLinejoin="round" 
+                        strokeWidth={2} 
+                        d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zm10 0a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zm10 0a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" 
+                      />
+                    </svg>
+                    Dashboard
+                  </button>
 
                   <button
                     onClick={handleLogout}

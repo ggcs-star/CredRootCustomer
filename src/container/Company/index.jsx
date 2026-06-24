@@ -7,6 +7,7 @@ import StepperWrapper from "../../routes/MainRoutes/Stepper/components/StepperWr
 import {
   createCompanyDetails,
   getEntityTypes,
+  getCompanyDetails,
 } from "../../../api";
 
 const Company = () => {
@@ -14,6 +15,7 @@ const Company = () => {
 
   const [loading, setLoading] = useState(false);
   const [entityTypes, setEntityTypes] = useState([]);
+  const [isEditMode, setIsEditMode] = useState(false);
 
   // Define steps for the stepper
   const steps = [
@@ -45,43 +47,76 @@ const Company = () => {
 
   useEffect(() => {
     fetchEntityTypes();
+    fetchCompanyData();
   }, []);
 
   const fetchEntityTypes = async () => {
     try {
-      const response =
-        await getEntityTypes();
-
-      setEntityTypes(
-        response?.data?.data || []
-      );
+      const response = await getEntityTypes();
+      setEntityTypes(response?.data?.data || []);
     } catch (error) {
-      console.error(
-        "Entity Types Error:",
-        error
-      );
+      console.error("Entity Types Error:", error);
+    }
+  };
+
+  const fetchCompanyData = async () => {
+    try {
+      setLoading(true);
+      const response = await getCompanyDetails();
+      
+      if (response?.data?.data) {
+        const companyData = response.data.data;
+        
+        // Format the data for the form
+        const formattedData = {
+          company_name: companyData.company_name || "",
+          entity_type: companyData.entity_type || "",
+          industry_type: companyData.industry_type || "",
+          pan_number: companyData.pan_number || "",
+          monthly_revenue: companyData.monthly_revenue || "",
+          city: companyData.city || "",
+          state: companyData.state || "",
+          members: companyData.members && companyData.members.length > 0 
+            ? companyData.members.map(member => ({
+                name: member.name || "",
+                designation: member.designation || "",
+                pan_number: member.pan_number || "",
+                mobile: member.mobile || "",
+                ownership_percentage: member.ownership_percentage || "",
+              }))
+            : [
+                {
+                  name: "",
+                  designation: "",
+                  pan_number: "",
+                  mobile: "",
+                  ownership_percentage: "",
+                },
+              ],
+        };
+        
+        setFormData(formattedData);
+        setIsEditMode(true);
+      }
+    } catch (error) {
+      console.error("Fetch Company Data Error:", error);
+      // If company doesn't exist, it's a new company creation
+      setIsEditMode(false);
+    } finally {
+      setLoading(false);
     }
   };
 
   const handleChange = (e) => {
     setFormData((prev) => ({
       ...prev,
-      [e.target.name]:
-        e.target.value,
+      [e.target.name]: e.target.value,
     }));
   };
 
-  const handleMemberChange = (
-    index,
-    e
-  ) => {
-    const updatedMembers = [
-      ...formData.members,
-    ];
-
-    updatedMembers[index][
-      e.target.name
-    ] = e.target.value;
+  const handleMemberChange = (index, e) => {
+    const updatedMembers = [...formData.members];
+    updatedMembers[index][e.target.name] = e.target.value;
 
     setFormData({
       ...formData,
@@ -106,15 +141,9 @@ const Company = () => {
   };
 
   const removeMember = (index) => {
-    if (
-      formData.members.length === 1
-    )
-      return;
+    if (formData.members.length === 1) return;
 
-    const updatedMembers =
-      formData.members.filter(
-        (_, i) => i !== index
-      );
+    const updatedMembers = formData.members.filter((_, i) => i !== index);
 
     setFormData({
       ...formData,
@@ -145,24 +174,15 @@ const Company = () => {
     try {
       setLoading(true);
 
-      console.log(
-        "Company Payload:",
-        formData
-      );
+      console.log("Company Payload:", formData);
 
-      const response =
-        await createCompanyDetails(
-          formData
-        );
+      const response = await createCompanyDetails(formData);
 
-      console.log(
-        "Company Response:",
-        response.data
-      );
+      console.log("Company Response:", response.data);
 
       alert(
         response?.data?.message ||
-          "Company Added Successfully"
+          (isEditMode ? "Company Updated Successfully" : "Company Added Successfully")
       );
 
       const companyId =
@@ -171,23 +191,16 @@ const Company = () => {
         response?.data?.id;
 
       if (companyId) {
-        localStorage.setItem(
-          "company_id",
-          companyId
-        );
+        localStorage.setItem("company_id", companyId);
       }
 
       navigate("/company-banks");
     } catch (error) {
-      console.error(
-        "Company Create Error:",
-        error
-      );
+      console.error("Company Create Error:", error);
 
       alert(
-        error?.response?.data
-          ?.message ||
-          "Failed To Save Company"
+        error?.response?.data?.message ||
+          (isEditMode ? "Failed To Update Company" : "Failed To Save Company")
       );
     } finally {
       setLoading(false);
@@ -208,8 +221,8 @@ const Company = () => {
       steps={steps}
       currentStep={1}
       onStepClick={handleStepClick}
-      title="Company Details"
-      subtitle="Enter your company information"
+      title={isEditMode ? "Edit Company Details" : "Company Details"}
+      subtitle={isEditMode ? "Update your company information" : "Enter your company information"}
     >
       <form
         onSubmit={handleSubmit}
@@ -535,7 +548,7 @@ const Company = () => {
           >
             {loading
               ? "Saving..."
-              : "Save & Continue →"}
+              : isEditMode ? "Update & Continue →" : "Save & Continue →"}
           </button>
         </div>
       </form>

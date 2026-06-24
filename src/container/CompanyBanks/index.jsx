@@ -1,13 +1,16 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import StepperWrapper from "../../routes/MainRoutes/Stepper/components/StepperWrapper";
-import { createCompanyBank } from "../../../api";
+import { createCompanyBank, getCompanyBanks, getCompanyDetails } from "../../../api";
 
 const CompanyBanks = () => {
   const navigate = useNavigate();
 
   const [loading, setLoading] = useState(false);
+  const [fetchLoading, setFetchLoading] = useState(true);
   const [companyId, setCompanyId] = useState(null);
+  const [isEditMode, setIsEditMode] = useState(false);
+  const [bankId, setBankId] = useState(null);
 
   // Define steps for the stepper
   const steps = [
@@ -28,66 +31,136 @@ const CompanyBanks = () => {
     is_primary: true,
   });
 
-  // Get company_id from localStorage on component mount
+  // Get company_id from API on component mount
   useEffect(() => {
-    const getCompanyId = () => {
-      // First try to get from localStorage directly
-      let id = localStorage.getItem("company_id");
-      
-      if (id) {
-        console.log("Company ID from localStorage:", id);
-        return id;
-      }
-      
-      // If not found, try to get from onboarding_data
+    const fetchCompanyAndBankData = async () => {
       try {
-        const onboardingData = JSON.parse(
-          localStorage.getItem("onboarding_data") || "{}"
-        );
+        setFetchLoading(true);
         
-        id = onboardingData?.company?.id;
+        // First, fetch company details to get the company ID
+        console.log("🔄 Fetching company details...");
+        const companyResponse = await getCompanyDetails();
+        console.log("📦 Company API Response:", companyResponse);
         
-        if (id) {
-          console.log("Company ID from onboarding_data:", id);
-          // Save it back to localStorage for future use
-          localStorage.setItem("company_id", id);
-          return id;
+        if (companyResponse?.data?.data?.id) {
+          const companyIdFromApi = companyResponse.data.data.id;
+          console.log("✅ Company ID from API:", companyIdFromApi);
+          
+          setCompanyId(companyIdFromApi);
+          
+          // Save company_id to localStorage
+          localStorage.setItem("company_id", companyIdFromApi);
+          
+          // Update form data with company_id
+          setFormData(prev => ({
+            ...prev,
+            company_id: companyIdFromApi
+          }));
+          
+          // Now fetch bank data
+          await fetchBankData(companyIdFromApi);
+        } else {
+          console.warn("❌ Company ID not found in API response");
+          
+          // Try to get from localStorage as fallback
+          const localId = localStorage.getItem("company_id");
+          if (localId) {
+            console.log("Using company ID from localStorage:", localId);
+            setCompanyId(localId);
+            setFormData(prev => ({
+              ...prev,
+              company_id: localId
+            }));
+            await fetchBankData(localId);
+          } else {
+            alert("Company not found. Please complete your company profile first.");
+            navigate("/company");
+          }
         }
       } catch (error) {
-        console.error("Error parsing onboarding_data:", error);
-      }
-      
-      // If still not found, try to get from user data
-      try {
-        const userData = JSON.parse(
-          localStorage.getItem("user") || "{}"
-        );
-        if (userData?.company?.id) {
-          id = userData.company.id;
-          localStorage.setItem("company_id", id);
-          return id;
+        console.error("❌ Error fetching company data:", error);
+        
+        // Try to get from localStorage as fallback
+        const localId = localStorage.getItem("company_id");
+        if (localId) {
+          console.log("Using company ID from localStorage (fallback):", localId);
+          setCompanyId(localId);
+          setFormData(prev => ({
+            ...prev,
+            company_id: localId
+          }));
+          await fetchBankData(localId);
+        } else {
+          alert("Company not found. Please complete your company profile first.");
+          navigate("/company");
         }
-      } catch (error) {
-        console.error("Error parsing user data:", error);
+      } finally {
+        setFetchLoading(false);
       }
-      
-      return null;
     };
 
-    const id = getCompanyId();
-    setCompanyId(id);
-    
-    // Update form data with company_id
-    setFormData(prev => ({
-      ...prev,
-      company_id: id || ""
-    }));
-
-    // Log if company_id is not found (for debugging only)
-    if (!id) {
-      console.warn("Company ID not found in localStorage");
-    }
+    fetchCompanyAndBankData();
   }, []);
+
+  const fetchBankData = async (companyIdParam) => {
+    try {
+      console.log("🔄 Fetching bank data for company:", companyIdParam);
+      
+      const response = await getCompanyBanks();
+      console.log("📦 Full API Response:", response);
+      
+      // Check if response has data
+      if (response?.data?.data) {
+        const bankData = response.data.data;
+        console.log("✅ Bank data received:", bankData);
+        
+        // Format the data for the form
+        const formattedData = {
+          company_id: bankData.company_id || companyIdParam,
+          bank_name: bankData.bank_name || "",
+          account_holder_name: bankData.account_holder_name || "",
+          account_number: bankData.account_number || "",
+          ifsc_code: bankData.ifsc_code || "",
+          account_type: bankData.account_type || "",
+          is_primary: bankData.is_primary === 1 || bankData.is_primary === true,
+        };
+        
+        console.log("📝 Formatted data for form:", formattedData);
+        
+        setFormData(formattedData);
+        setBankId(bankData.id);
+        setIsEditMode(true);
+        
+        // Save bank id to localStorage
+        if (bankData.id) {
+          localStorage.setItem("bank_id", bankData.id);
+        }
+        
+        console.log("✅ Bank data loaded successfully!");
+      } else {
+        console.log("ℹ️ No bank data found, will create new entry");
+        setIsEditMode(false);
+      }
+    } catch (error) {
+      console.error("❌ Fetch Bank Data Error:", error);
+      
+      // Log more details about the error
+      if (error.response) {
+        console.error("Response status:", error.response.status);
+        console.error("Response data:", error.response.data);
+      }
+      
+      // If error is 404 or no data found, it's a new bank creation
+      if (error.response?.status === 404) {
+        console.log("ℹ️ No bank record found (404), will create new entry");
+        setIsEditMode(false);
+      } else {
+        // For other errors, show alert but allow user to proceed
+        alert("Could not fetch bank details. You can still add new bank information.");
+        setIsEditMode(false);
+      }
+    }
+  };
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -118,28 +191,59 @@ const CompanyBanks = () => {
     try {
       setLoading(true);
 
-      console.log("Submitting bank data:", formData);
+      // Prepare payload - convert is_primary to number for API
+      const payload = {
+        company_id: formData.company_id,
+        bank_name: formData.bank_name,
+        account_holder_name: formData.account_holder_name,
+        account_number: formData.account_number,
+        ifsc_code: formData.ifsc_code,
+        account_type: formData.account_type,
+        is_primary: formData.is_primary ? 1 : 0,
+      };
 
-      const response = await createCompanyBank(formData);
+      console.log("📤 Submitting bank data:", payload);
+      console.log("isEditMode:", isEditMode);
+      console.log("bankId:", bankId);
 
-      console.log("Bank Response:", response.data);
+      let response;
+      
+      // If editing, pass bankId separately to the API function
+      if (isEditMode && bankId) {
+        console.log("🔄 Updating bank with ID:", bankId);
+        response = await createCompanyBank(payload, bankId); // Pass bankId as second parameter
+      } else {
+        console.log("🆕 Creating new bank");
+        response = await createCompanyBank(payload); // Create new
+      }
+      
+      console.log("📥 Bank Response:", response);
 
-      alert(response?.data?.message || "Bank Details Saved Successfully");
+      alert(
+        response?.data?.message || 
+        (isEditMode ? "Bank Details Updated Successfully" : "Bank Details Saved Successfully")
+      );
 
       // Save bank id for loan application
-      const bankId = response?.data?.data?.id ||
-                     response?.data?.bank?.id ||
-                     response?.data?.id;
+      const newBankId = response?.data?.data?.id ||
+                        response?.data?.bank?.id ||
+                        response?.data?.id;
 
-      if (bankId) {
-        localStorage.setItem("bank_id", bankId);
-        console.log("Bank ID saved:", bankId);
+      if (newBankId) {
+        localStorage.setItem("bank_id", newBankId);
+        console.log("💾 Bank ID saved:", newBankId);
       }
 
       // Redirect to Loan Application
       navigate("/loan-application");
     } catch (error) {
-      console.error("Bank Save Error:", error);
+      console.error("❌ Bank Save Error:", error);
+
+      // Log more details about the error
+      if (error.response) {
+        console.error("Response status:", error.response.status);
+        console.error("Response data:", error.response.data);
+      }
 
       // Handle validation errors from backend
       if (error?.response?.data?.errors) {
@@ -149,7 +253,7 @@ const CompanyBanks = () => {
       } else if (error?.response?.data?.message) {
         alert(error.response.data.message);
       } else {
-        alert("Failed To Save Bank Details. Please try again.");
+        alert(isEditMode ? "Failed To Update Bank Details. Please try again." : "Failed To Save Bank Details. Please try again.");
       }
     } finally {
       setLoading(false);
@@ -165,13 +269,33 @@ const CompanyBanks = () => {
     }
   };
 
+  // Show loading state while fetching data
+  if (fetchLoading) {
+    return (
+      <StepperWrapper
+        steps={steps}
+        currentStep={2}
+        onStepClick={handleStepClick}
+        title="Company Bank Details"
+        subtitle="Loading bank details..."
+      >
+        <div className="flex justify-center items-center py-12">
+          <div className="text-center">
+            <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mb-4"></div>
+            <p className="text-gray-600">Loading bank details...</p>
+          </div>
+        </div>
+      </StepperWrapper>
+    );
+  }
+
   return (
     <StepperWrapper
       steps={steps}
       currentStep={2}
       onStepClick={handleStepClick}
-      title="Company Bank Details"
-      subtitle="Add your company bank account"
+      title={isEditMode ? "Edit Company Bank Details" : "Company Bank Details"}
+      subtitle={isEditMode ? "Update your company bank account" : "Add your company bank account"}
     >
       <form onSubmit={handleSubmit} className="grid md:grid-cols-2 gap-6">
         {/* Hidden company_id field */}
@@ -288,7 +412,7 @@ const CompanyBanks = () => {
             disabled={loading}
             className="px-8 py-3 bg-blue-600 text-white rounded-xl font-semibold hover:bg-blue-700 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
           >
-            {loading ? "Saving..." : "Save & Continue →"}
+            {loading ? "Saving..." : isEditMode ? "Update & Continue →" : "Save & Continue →"}
           </button>
         </div>
       </form>
