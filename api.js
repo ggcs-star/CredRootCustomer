@@ -1,8 +1,9 @@
 // src/api/api.js
 import axios from "axios";
 
-export const BASE_URL = "http://192.168.0.106:8000/api";
+// export const BASE_URL = "http://192.168.0.106:8000/api";
 // export const BASE_URL = "http://10.124.208.153:8000/api";
+export const BASE_URL = "https://credrootadmin.ggconsultancy.services/api";
 
 const API = axios.create({
     baseURL: BASE_URL,

@@ -4,6 +4,7 @@ import {
   FaEnvelope,
   FaLock,
   FaUser,
+  FaPhone,
 } from "react-icons/fa";
 
 import { registerUser, verifyOtp } from "../../../api";
@@ -19,6 +20,7 @@ const Signup = () => {
   const [formData, setFormData] = useState({
     name: "",
     email: "",
+    mobile: "",
     password: "",
     password_confirmation: "",
   });
@@ -169,6 +171,26 @@ const Signup = () => {
                     value={formData.email}
                     onChange={handleChange}
                     placeholder="Enter your email address"
+                    required
+                    className="w-full border-2 border-gray-300 bg-white rounded-xl pl-12 pr-4 py-3 text-gray-800 outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block mb-2 font-medium text-gray-700">
+                  Mobile Number
+                </label>
+
+                <div className="relative">
+                  <FaPhone className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
+
+                  <input
+                    type="tel"
+                    name="mobile"
+                    value={formData.mobile}
+                    onChange={handleChange}
+                    placeholder="Enter your mobile number"
                     required
                     className="w-full border-2 border-gray-300 bg-white rounded-xl pl-12 pr-4 py-3 text-gray-800 outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-100"
                   />
