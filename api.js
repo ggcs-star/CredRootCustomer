@@ -46,13 +46,17 @@ API.interceptors.response.use(
 export const registerUser = (formData) =>
     API.post("/register", formData);
 
-// Verify OTP
+// Verify OTP (for registration)
 export const verifyOtp = (formData) =>
     API.post("/verify-otp", formData);
 
 // Login User
 export const loginUser = (formData) =>
     API.post("/login", formData);
+
+// Verify Login OTP (for suspicious login)
+export const verifyLoginOtp = (formData) =>
+    API.post("/verify-otp", formData);
 
 // Logout User
 export const logoutUser = () =>
@@ -67,7 +71,7 @@ export const resetPassword = (token, passwords) =>
     API.post(`/reset-password/${token}`, passwords);
 
 // =========================
-// LOAN APIs
+// LOAN APIs (DEPRECATED - Use LEAD APIs instead)
 // =========================
 
 export const applyLoan = async (data) => {
@@ -92,6 +96,105 @@ export const getLoanTypes = async () => {
         return response;
     } catch (error) {
         console.error("❌ Get Loan Types Error:", {
+            message: error.message,
+            status: error.response?.status,
+            data: error.response?.data
+        });
+        throw error;
+    }
+};
+
+// =========================
+// LEAD APIs (NEW)
+// =========================
+
+/**
+ * Get all leads for the authenticated user
+ * GET: /api/leads
+ */
+export const getLeads = async () => {
+    try {
+        const response = await API.get("/leads");
+        console.log("✅ Get Leads Response:", response.data);
+        return response;
+    } catch (error) {
+        console.error("❌ Get Leads Error:", {
+            message: error.message,
+            status: error.response?.status,
+            data: error.response?.data
+        });
+        throw error;
+    }
+};
+
+/**
+ * Get a specific lead by ID
+ * GET: /api/leads/{id}
+ */
+export const getLeadById = async (id) => {
+    try {
+        const response = await API.get(`/leads/${id}`);
+        console.log("✅ Get Lead By ID Response:", response.data);
+        return response;
+    } catch (error) {
+        console.error("❌ Get Lead By ID Error:", {
+            message: error.message,
+            status: error.response?.status,
+            data: error.response?.data
+        });
+        throw error;
+    }
+};
+
+/**
+ * Create a new lead (loan application)
+ * POST: /api/leads
+ */
+export const createLead = async (data) => {
+    try {
+        const response = await API.post("/leads", data);
+        console.log("✅ Create Lead Response:", response.data);
+        return response;
+    } catch (error) {
+        console.error("❌ Create Lead Error:", {
+            message: error.message,
+            status: error.response?.status,
+            data: error.response?.data
+        });
+        throw error;
+    }
+};
+
+/**
+ * Update an existing lead
+ * PUT: /api/leads/{id}
+ */
+export const updateLead = async (id, data) => {
+    try {
+        const response = await API.put(`/leads/${id}`, data);
+        console.log("✅ Update Lead Response:", response.data);
+        return response;
+    } catch (error) {
+        console.error("❌ Update Lead Error:", {
+            message: error.message,
+            status: error.response?.status,
+            data: error.response?.data
+        });
+        throw error;
+    }
+};
+
+/**
+ * Delete a lead
+ * DELETE: /api/leads/{id}
+ */
+export const deleteLead = async (id) => {
+    try {
+        const response = await API.delete(`/leads/${id}`);
+        console.log("✅ Delete Lead Response:", response.data);
+        return response;
+    } catch (error) {
+        console.error("❌ Delete Lead Error:", {
             message: error.message,
             status: error.response?.status,
             data: error.response?.data
@@ -403,7 +506,7 @@ export const deleteCompanyBank = async (id) => {
 };
 
 // =========================
-// BANK ACCOUNT APIs (NEW)
+// BANK ACCOUNT APIs
 // =========================
 
 /**
@@ -536,7 +639,7 @@ export const updateUserProfile = async (data) => {
 };
 
 // =========================
-// LOAN APPLICATION APIs
+// LOAN APPLICATION APIs (DEPRECATED - Use LEAD APIs instead)
 // =========================
 
 export const getLoanApplication = async () => {
