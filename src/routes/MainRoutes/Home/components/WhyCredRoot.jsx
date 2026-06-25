@@ -5,7 +5,7 @@ import {
   FiMessageSquare,
 } from "react-icons/fi";
 import { HiOutlineBadgeCheck } from "react-icons/hi";
-import whyImage from "../../../../assets/home/whycredroot/why-credroot.svg";
+import whyImage from "../../../../assets/home/whycredroot/why-credroot.png";
 
 export default function WhyCredRoot() {
   const features = [
@@ -32,7 +32,7 @@ export default function WhyCredRoot() {
   ];
 
   return (
-    <section className="bg-[#f8f9fc] py-16 lg:py-24">
+    <section className="bg-white py-16 lg:py-24">
       <div className="max-w-7xl mx-auto px-6 lg:px-10">
         {/* Heading */}
         <div className="text-center max-w-4xl mx-auto mb-16">

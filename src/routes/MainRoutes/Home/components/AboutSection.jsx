@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import aboutBg from "../../../../assets/home/aboutus/about-us-pattern.jpg";
-import aboutIllustration from "../../../../assets/home/aboutus/about-us.svg";
+import aboutIllustration from "../../../../assets/home/aboutus/about-us.png";
 
 export default function AboutSection() {
   const [offsetY, setOffsetY] = useState(0);
@@ -18,7 +18,7 @@ export default function AboutSection() {
   }, []);
 
   return (
-    <section className="relative overflow-hidden bg-[#f8f9fc] py-16 lg:py-24">
+    <section className="relative overflow-hidden bg-[#f7faff] py-8">
       {/* Parallax Background */}
       <div
         className="absolute inset-0 z-0 opacity-20"

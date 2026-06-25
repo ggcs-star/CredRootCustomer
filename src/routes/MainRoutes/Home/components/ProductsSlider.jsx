@@ -1,114 +1,210 @@
-import { Swiper, SwiperSlide } from "swiper/react";
-import { Autoplay, Pagination } from "swiper/modules";
+import Slider from "react-slick";
+import {
+  Building2,
+  ShieldCheck,
+  Handshake,
+  HardHat,
+} from "lucide-react";
 
-import "swiper/css";
-import "swiper/css/pagination";
+import "slick-carousel/slick/slick.css";
+import "slick-carousel/slick/slick-theme.css";
 
-import slide1 from "../../../../assets/home/product/product1.svg";
-import slide2 from "../../../../assets/home/product/product2.svg";
-import slide3 from "../../../../assets/home/product/product3.svg";
-import slide4 from "../../../../assets/home/product/product4.svg";
+// Import Images
+import product1 from "../../../../assets/home/products/product1.png";
+import product2 from "../../../../assets/home/products/product2.png";
+import product3 from "../../../../assets/home/products/product3.png";
+import product4 from "../../../../assets/home/products/product4.png";
 
 const products = [
   {
-    image: slide1,
+    id: 1,
+    image: product1,
+    icon: Building2,
+    iconBg: "bg-blue-600",
     title: "Collateral backed Loans for MSME",
-    roi: "ROI ranges from 9.50% to 11%",
+    subtitle: "ROI ranges from 9.50% to 11%",
     description:
-      "If applicant has property to give, ideally he/she should take collateral backed loans as costs of fund is always lower in secured loans as compared to unsecured/collateral free loans.",
+      "If applicant has property to give, ideally should take collateral backed loans as cost of funds is always lower in secured loans compared to unsecured collateral-free loans.",
   },
   {
-    image: slide2,
+    id: 2,
+    image: product2,
+    icon: ShieldCheck,
+    iconBg: "bg-green-500",
     title: "Collateral Free Loans for MSME",
-    roi: "Govt guarantee backed loans up to Rs. 5 Crores",
+    subtitle: "Govt guarantee backed loans up to Rs. 5 Crores",
     description:
-      "ROI ranges from 10% to 13%. Not to worry, if you are running businesses for more than three years and don't have collaterals to offer for loans. You can arrange a loan without collaterals under various government guarantee backed funding schemes through CredRoot platform.",
+      "ROI ranges from 10% to 13%. If you're running a business for more than three years and don't have collateral, collateral-free funding is available.",
   },
   {
-    image: slide3,
+    id: 3,
+    image: product3,
+    icon: Handshake,
+    iconBg: "bg-purple-500",
     title: "Hybrid Loans",
-    roi: "",
+    subtitle: "",
     description:
-      "Not to worry, if you are short of properties against funding amount you want in your business, you can arrange funding mixed of collaterals and no-collateral backed exposure, which will help you to reduce cost of funds to the extent possible.",
+      "If you are short of collateral against the funding amount required, hybrid loans combine secured and unsecured exposure for flexible financing.",
   },
   {
-    image: slide4,
+    id: 4,
+    image: product4,
+    icon: HardHat,
+    iconBg: "bg-orange-500",
     title: "Project Finance - Green Field or Brown Field",
-    roi: "",
+    subtitle: "",
     description:
-      "CredRoot supports any sort of loan requirement. Dynamism and matrix of CredRoot build very flexible to support any kind of fund raising for variety of businesses.",
+      "Creditflow supports project financing for Greenfield and Brownfield projects with flexible funding solutions for different business requirements.",
   },
 ];
 
-export default function ProductsSlider() {
-  return (
-    <section className="bg-[#f5f5f5] py-20">
-      <div className="max-w-7xl mx-auto px-6">
+export default function ProductSlider() {
+  const settings = {
+    dots: true,
+    arrows: true,
+    infinite: true,
+    speed: 700,
+    slidesToShow: 4,
+    slidesToScroll: 1,
+    autoplay: true,
+    autoplaySpeed: 3500,
+    pauseOnHover: false,
+    cssEase: "ease-in-out",
+    responsive: [
+      {
+        breakpoint: 1200,
+        settings: {
+          slidesToShow: 3,
+        },
+      },
+      {
+        breakpoint: 992,
+        settings: {
+          slidesToShow: 2,
+        },
+      },
+      {
+        breakpoint: 640,
+        settings: {
+          slidesToShow: 1,
+        },
+      },
+    ],
+  };
 
-        {/* Common Heading */}
-        <div className="text-center mb-16">
+  return (
+    <section className="py-16 bg-[#f5f5f5]">
+      <div className="max-w-7xl mx-auto px-5">
+        {/* Heading */}
+        <div className="text-center mb-12">
           <h2 className="text-[54px] font-light text-[#111]">
             Products
           </h2>
-
-          <div className="flex items-center justify-center mt-4">
-            <div className="w-20 h-[1px] bg-gray-300"></div>
-            <div className="w-10 h-[3px] bg-[#1E88FF]"></div>
-            <div className="w-20 h-[1px] bg-gray-300"></div>
-          </div>
         </div>
 
-        <Swiper
-          modules={[Autoplay, Pagination]}
-          autoplay={{
-            delay: 5000,
-            disableOnInteraction: false,
-          }}
-          pagination={{
-            clickable: true,
-          }}
-          loop
-          className="products-swiper"
-        >
-          {products.map((product, index) => (
-            <SwiperSlide key={index}>
-              <div className="grid lg:grid-cols-2 gap-12 items-center min-h-[500px]">
+        <Slider {...settings}>
+          {products.map((item) => {
+            const Icon = item.icon;
 
-                {/* Left Content */}
-                <div className="max-w-[700px]">
-                  <h3 className="text-[42px] font-bold text-[#111] leading-tight">
-                    {product.title}
-                  </h3>
+            return (
+              <div key={item.id} className="px-3 h-full">
+                <div className="bg-white rounded-xl border border-gray-200 overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 h-full flex flex-col">
+                  {/* Image */}
+                  <div className="relative h-44 overflow-visible">
+                    <img
+                      src={item.image}
+                      alt={item.title}
+                      className="w-full h-full object-cover"
+                    />
 
-                  {product.roi && (
-                    <p className="mt-4 text-[20px] font-semibold text-[#1E88FF]">
-                      {product.roi}
+                    {/* Floating Icon */}
+                    <div
+                      className={`absolute -bottom-5 left-5 w-12 h-12 rounded-full ${item.iconBg} border-4 border-white flex items-center justify-center shadow-lg z-10`}
+                    >
+                      <Icon className="text-white" size={22} />
+                    </div>
+                  </div>
+
+                  {/* Content */}
+                  <div className="pt-8 pb-6 px-5 flex-1 flex flex-col">
+                    <h3 className="text-lg font-semibold text-gray-900 leading-6 min-h-[52px]">
+                      {item.title}
+                    </h3>
+
+                    {item.subtitle && (
+                      <p className="text-[#1E88FF] font-semibold text-sm mt-2">
+                        {item.subtitle}
+                      </p>
+                    )}
+
+                    <p className="text-gray-600 text-sm leading-6 mt-3 flex-1">
+                      {item.description}
                     </p>
-                  )}
 
-                  <div className="mt-6 flex">
-                    <span className="text-green-600 text-2xl mr-3">✓</span>
-
-                    <p className="text-[20px] leading-relaxed text-[#333]">
-                      {product.description}
-                    </p>
+                    <button className="mt-5 flex items-center gap-2 text-[#1E88FF] font-semibold hover:text-blue-700 transition-all group">
+                      Know More
+                      <span className="group-hover:translate-x-1 transition-transform">
+                        →
+                      </span>
+                    </button>
                   </div>
                 </div>
-
-                {/* Right Image */}
-                <div className="flex justify-center">
-                  <img
-                    src={product.image}
-                    alt={product.title}
-                    className="w-full max-w-[550px] object-contain"
-                  />
-                </div>
-
               </div>
-            </SwiperSlide>
-          ))}
-        </Swiper>
+            );
+          })}
+        </Slider>
       </div>
+
+      {/* Custom Styles */}
+      <style jsx>{`
+        .slick-slide {
+          padding-bottom: 10px;
+        }
+
+        .slick-track {
+          display: flex !important;
+        }
+
+        .slick-slide {
+          height: inherit !important;
+        }
+
+        .slick-slide > div {
+          height: 100%;
+        }
+
+        .slick-prev,
+        .slick-next {
+          z-index: 10;
+        }
+
+        .slick-prev {
+          left: -45px;
+        }
+
+        .slick-next {
+          right: -45px;
+        }
+
+        .slick-prev:before,
+        .slick-next:before {
+          color: #1e88ff;
+          font-size: 28px;
+        }
+
+        .slick-dots {
+          bottom: -45px;
+        }
+
+        .slick-dots li button:before {
+          color: #1e88ff;
+          font-size: 12px;
+        }
+
+        .slick-dots li.slick-active button:before {
+          color: #1e88ff;
+        }
+      `}</style>
     </section>
   );
 }

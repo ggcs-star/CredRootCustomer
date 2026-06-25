@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, Link, Outlet, useLocation } from "react-router-dom";
+import toast from "react-hot-toast";
 import {
   IoHome,
   IoDocumentText,
@@ -19,7 +20,14 @@ import {
   FaBuilding,
   FaFileAlt,
 } from "react-icons/fa";
-import { logoutUser, getUserProfile, getCompanyDetails, getCompanyBanks, getLoanApplication } from "../../../../api";
+import { 
+  logoutUser, 
+  getUserProfile, 
+  getCompanyDetails, 
+  getBankAccounts,
+  getLeads,
+  getLeadDocuments
+} from "../../../../api";
 
 // Dashboard Shimmer Effect Component
 const DashboardShimmer = () => {
@@ -27,13 +35,11 @@ const DashboardShimmer = () => {
     <div className="flex h-screen bg-gray-100 overflow-hidden">
       {/* Sidebar Shimmer */}
       <aside className="bg-white shadow-lg w-64 flex flex-col h-screen">
-        {/* Logo Shimmer */}
         <div className="flex items-center justify-between p-4 border-b">
           <div className="h-8 bg-gray-200 rounded w-24 animate-pulse"></div>
           <div className="h-6 w-6 bg-gray-200 rounded animate-pulse"></div>
         </div>
 
-        {/* User Profile Shimmer */}
         <div className="p-4 border-b">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 bg-gray-200 rounded-full animate-pulse"></div>
@@ -44,7 +50,6 @@ const DashboardShimmer = () => {
           </div>
         </div>
 
-        {/* Navigation Menu Shimmer */}
         <nav className="flex-1 p-4">
           <ul className="space-y-2">
             {[1, 2, 3, 4, 5, 6].map((item) => (
@@ -58,7 +63,6 @@ const DashboardShimmer = () => {
           </ul>
         </nav>
 
-        {/* Logout Button Shimmer */}
         <div className="p-4 border-t">
           <div className="flex items-center gap-3 px-3 py-2">
             <div className="w-5 h-5 bg-gray-200 rounded animate-pulse"></div>
@@ -67,16 +71,13 @@ const DashboardShimmer = () => {
         </div>
       </aside>
 
-      {/* Main Content Shimmer */}
       <main className="flex-1 overflow-y-auto p-6">
         <div className="max-w-7xl mx-auto">
-          {/* Welcome Header Shimmer */}
           <div className="mb-8">
             <div className="h-8 bg-gray-200 rounded w-1/3 animate-pulse mb-2"></div>
             <div className="h-4 bg-gray-200 rounded w-1/2 animate-pulse"></div>
           </div>
 
-          {/* Stats Cards Shimmer */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
             {[1, 2, 3, 4].map((item) => (
               <div key={item} className="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
@@ -91,7 +92,6 @@ const DashboardShimmer = () => {
             ))}
           </div>
 
-          {/* Detailed Information Shimmer */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {[1, 2].map((item) => (
               <div key={item} className="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
@@ -112,7 +112,6 @@ const DashboardShimmer = () => {
             ))}
           </div>
 
-          {/* Quick Actions Shimmer */}
           <div className="mt-6">
             <div className="h-6 bg-gray-200 rounded w-1/4 mb-4 animate-pulse"></div>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -138,9 +137,11 @@ const Dashboard = () => {
   const [activeTab, setActiveTab] = useState("overview");
   const [loading, setLoading] = useState(true);
   const [profileData, setProfileData] = useState(null);
-  const [companyData, setCompanyData] = useState(null);
+  const [companies, setCompanies] = useState([]);
   const [bankData, setBankData] = useState(null);
-  const [loanData, setLoanData] = useState(null);
+  const [leadsData, setLeadsData] = useState([]);
+  const [documentData, setDocumentData] = useState(null);
+  const [accountOverview, setAccountOverview] = useState(null);
 
   // Update active tab based on current path
   useEffect(() => {
@@ -165,21 +166,21 @@ const Dashboard = () => {
       try {
         setLoading(true);
         
-        // Get user from localStorage
         const storedUser = localStorage.getItem("user");
         if (storedUser) {
           setUser(JSON.parse(storedUser));
         }
 
-        // Fetch all data
         await Promise.all([
           fetchProfile(),
-          fetchCompany(),
+          fetchCompanies(),
           fetchBank(),
-          fetchLoan()
+          fetchLeads(),
+          fetchDocuments()
         ]);
       } catch (error) {
         console.error("Error loading dashboard data:", error);
+        toast.error("Failed to load dashboard data");
       } finally {
         setLoading(false);
       }
@@ -197,30 +198,68 @@ const Dashboard = () => {
     }
   };
 
-  const fetchCompany = async () => {
+  const fetchCompanies = async () => {
     try {
       const response = await getCompanyDetails();
-      setCompanyData(response?.data?.data);
+      // Handle the response structure - data is an array of companies
+      const companiesData = response?.data?.data || [];
+      setCompanies(companiesData);
+      
+      // If there's a company, store the first one's ID
+      if (companiesData.length > 0 && !localStorage.getItem("company_id")) {
+        localStorage.setItem("company_id", companiesData[0].id);
+      }
     } catch (error) {
-      console.error("Error fetching company:", error);
+      console.error("Error fetching companies:", error);
+      setCompanies([]);
     }
   };
 
   const fetchBank = async () => {
     try {
-      const response = await getCompanyBanks();
-      setBankData(response?.data?.data);
+      const response = await getBankAccounts();
+      const data = response?.data?.data;
+      if (Array.isArray(data) && data.length > 0) {
+        setBankData(data[0]);
+      } else if (data && !Array.isArray(data)) {
+        setBankData(data);
+      } else {
+        setBankData(null);
+      }
     } catch (error) {
       console.error("Error fetching bank:", error);
+      setBankData(null);
     }
   };
 
-  const fetchLoan = async () => {
+  const fetchLeads = async () => {
     try {
-      const response = await getLoanApplication();
-      setLoanData(response?.data?.data?.lead);
+      const response = await getLeads();
+      const data = response?.data?.data || [];
+      setLeadsData(data);
+      
+      if (data.length > 0 && !localStorage.getItem("lead_id")) {
+        localStorage.setItem("lead_id", data[0].id);
+      }
     } catch (error) {
-      console.error("Error fetching loan:", error);
+      console.error("Error fetching leads:", error);
+      setLeadsData([]);
+    }
+  };
+
+  const fetchDocuments = async () => {
+    try {
+      const leadId = localStorage.getItem("lead_id");
+      if (leadId) {
+        const response = await getLeadDocuments(leadId);
+        const data = response?.data?.data || {};
+        setDocumentData(data);
+        setAccountOverview(data?.account_overview || null);
+      }
+    } catch (error) {
+      console.error("Error fetching documents:", error);
+      setDocumentData(null);
+      setAccountOverview(null);
     }
   };
 
@@ -232,9 +271,11 @@ const Dashboard = () => {
       localStorage.removeItem("company_id");
       localStorage.removeItem("bank_id");
       localStorage.removeItem("lead_id");
+      toast.success("Logged out successfully");
       navigate("/login");
     } catch (error) {
       console.error("Logout error:", error);
+      toast.error("Failed to logout");
     }
   };
 
@@ -243,8 +284,8 @@ const Dashboard = () => {
     { id: "profile", label: "Profile", icon: <FaUserCircle className="w-5 h-5" />, path: "/dashboard/profile" },
     { id: "company", label: "Company", icon: <FaBuilding className="w-5 h-5" />, path: "/dashboard/company" },
     { id: "bank", label: "Bank Details", icon: <FaUniversity className="w-5 h-5" />, path: "/dashboard/company-banks" },
-    { id: "loan", label: "Loan Application", icon: <FaFileAlt className="w-5 h-5" />, path: "/dashboard/loan-application" },
     { id: "documents", label: "Documents", icon: <FaFileUpload className="w-5 h-5" />, path: "/dashboard/document-upload" },
+    { id: "loan", label: "Loan Application", icon: <FaFileAlt className="w-5 h-5" />, path: "/dashboard/loan-application" },
   ];
 
   const getStatusColor = (status) => {
@@ -269,68 +310,111 @@ const Dashboard = () => {
     return statusMap[status] || <IoTime className="w-5 h-5" />;
   };
 
-  // Check if we're on a nested route
+  const getDocumentStatusSummary = () => {
+    if (!documentData) return { total: 0, completed: 0, isComplete: false };
+    
+    const personalProfile = documentData?.personal_profile || {};
+    const businessProfiles = documentData?.business_profiles || [];
+    const loanApps = documentData?.loan_applications || [];
+    
+    let totalMandatory = 0;
+    let completedMandatory = 0;
+    
+    const personalPending = personalProfile?.pending_documents || [];
+    const personalCompleted = personalProfile?.completed_documents || [];
+    const personalMandatory = personalPending.filter(d => d.is_mandatory).length;
+    const personalCompletedMandatory = personalCompleted.filter(d => d.is_mandatory).length;
+    totalMandatory += personalMandatory + personalCompletedMandatory;
+    completedMandatory += personalCompletedMandatory;
+    
+    businessProfiles.forEach(business => {
+      const docStatus = business?.document_status || {};
+      const pending = docStatus?.pending_documents || [];
+      const completed = docStatus?.completed_documents || [];
+      const mandatory = pending.filter(d => d.is_mandatory).length;
+      const completedMandatoryCount = completed.filter(d => d.is_mandatory).length;
+      totalMandatory += mandatory + completedMandatoryCount;
+      completedMandatory += completedMandatoryCount;
+    });
+    
+    loanApps.forEach(loan => {
+      const docStatus = loan?.document_status || {};
+      const pending = docStatus?.pending_documents || [];
+      const completed = docStatus?.completed_documents || [];
+      const mandatory = pending.filter(d => d.is_mandatory).length;
+      const completedMandatoryCount = completed.filter(d => d.is_mandatory).length;
+      totalMandatory += mandatory + completedMandatoryCount;
+      completedMandatory += completedMandatoryCount;
+    });
+    
+    return {
+      total: totalMandatory,
+      completed: completedMandatory,
+      isComplete: totalMandatory > 0 && completedMandatory === totalMandatory
+    };
+  };
+
+  const getFirstLead = () => {
+    if (leadsData.length === 0) return null;
+    return leadsData[0];
+  };
+
+  const getCompanyName = () => {
+    if (companies.length === 0) return "Not Set";
+    // If there's a company in localStorage, find it
+    const companyId = localStorage.getItem("company_id");
+    if (companyId) {
+      const company = companies.find(c => c.id === parseInt(companyId));
+      if (company) return company.company_name;
+    }
+    // Otherwise return the first company name
+    return companies[0]?.company_name || "Not Set";
+  };
+
   const isNestedRoute = location.pathname !== "/dashboard";
 
-  // Show shimmer while loading
   if (loading) {
     return <DashboardShimmer />;
   }
 
+  const docStatus = getDocumentStatusSummary();
+  const firstLead = getFirstLead();
+
   return (
     <div className="flex h-screen bg-gray-100 overflow-hidden">
-      {/* Sidebar */}
       <aside
         className={`bg-white shadow-lg transition-all duration-300 ${
           isSidebarOpen ? "w-64" : "w-20"
         } flex flex-col h-screen overflow-y-auto`}
       >
-        {/* Logo */}
-        {/* <div className="flex items-center justify-between p-4 border-b">
-          <Link to="/" className="flex items-center gap-2">
-            <h1 className={`text-2xl font-light tracking-tight ${!isSidebarOpen && "hidden"}`}>
-              <span className="text-black">Cred</span>
-              <span className="text-blue-500">Root</span>
-            </h1>
-            {!isSidebarOpen && (
-              <h1 className="text-2xl font-light tracking-tight">
-                <span className="text-blue-500">CR</span>
-              </h1>
+        <div className="p-4 border-b">
+          <div className="flex items-center gap-2">
+            <div className="w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center font-semibold text-lg flex-shrink-0">
+              {user?.name?.charAt(0)?.toUpperCase() || "U"}
+            </div>
+            {isSidebarOpen && (
+              <div className="flex-1 min-w-0">
+                <p className="font-semibold text-gray-800 truncate">
+                  {user?.name || "User"}
+                </p>
+                <p className="text-xs text-gray-500 truncate">
+                  {user?.email || "user@example.com"}
+                </p>
+              </div>
             )}
-          </Link>
-          
-        </div> */}
+            <button
+              onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+              className="p-1 rounded-lg hover:bg-gray-100 transition flex-shrink-0 ml-auto"
+            >
+              {isSidebarOpen ? (
+                <IoChevronUp className="w-5 h-5 text-gray-600" />
+              ) : (
+                <IoChevronDown className="w-5 h-5 text-gray-600" />
+              )}
+            </button>
+          </div>
+        </div>
 
-        {/* User Profile in Sidebar */}
-       <div className="p-4 border-b">
-  <div className="flex items-center gap-2">
-    <div className="w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center font-semibold text-lg flex-shrink-0">
-      {user?.name?.charAt(0)?.toUpperCase() || "U"}
-    </div>
-    {isSidebarOpen && (
-      <div className="flex-1 min-w-0">
-        <p className="font-semibold text-gray-800 truncate">
-          {user?.name || "User"}
-        </p>
-        <p className="text-xs text-gray-500 truncate">
-          {user?.email || "user@example.com"}
-        </p>
-      </div>
-    )}
-    <button
-      onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-      className="p-1 rounded-lg hover:bg-gray-100 transition flex-shrink-0 ml-auto"
-    >
-      {isSidebarOpen ? (
-        <IoChevronUp className="w-5 h-5 text-gray-600" />
-      ) : (
-        <IoChevronDown className="w-5 h-5 text-gray-600" />
-      )}
-    </button>
-  </div>
-</div>
-
-        {/* Navigation Menu */}
         <nav className="flex-1 p-4">
           <ul className="space-y-1">
             {menuItems.map((item) => (
@@ -356,7 +440,6 @@ const Dashboard = () => {
           </ul>
         </nav>
 
-        {/* Logout Button */}
         <div className="p-4 border-t">
           <button
             onClick={handleLogout}
@@ -368,16 +451,12 @@ const Dashboard = () => {
         </div>
       </aside>
 
-      {/* Main Content */}
       <main className="flex-1 overflow-y-auto p-6">
         <div className="max-w-7xl mx-auto">
           {isNestedRoute ? (
-            // Render nested routes using Outlet
             <Outlet />
           ) : (
-            // Overview Content
             <>
-              {/* Welcome Header */}
               <div className="mb-8">
                 <h1 className="text-3xl font-bold text-gray-900">
                   Welcome back, {user?.name || "User"}! 👋
@@ -387,15 +466,17 @@ const Dashboard = () => {
                 </p>
               </div>
 
-              {/* Stats Cards */}
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
                 <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
                   <div className="flex items-center justify-between">
                     <div>
                       <p className="text-sm text-gray-600">Company</p>
                       <p className="text-lg font-semibold text-gray-900 mt-1 truncate">
-                        {companyData?.company_name || "Not Set"}
+                        {getCompanyName()}
                       </p>
+                      {companies.length > 1 && (
+                        <p className="text-xs text-gray-500">{companies.length} companies</p>
+                      )}
                     </div>
                     <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
                       <FaBuilding className="w-6 h-6 text-blue-600" />
@@ -408,7 +489,7 @@ const Dashboard = () => {
                     <div>
                       <p className="text-sm text-gray-600">Loan Amount</p>
                       <p className="text-lg font-semibold text-gray-900 mt-1">
-                        {loanData?.loan_amount ? `₹${parseFloat(loanData.loan_amount).toLocaleString()}` : "Not Applied"}
+                        {firstLead?.loan_amount ? `₹${parseFloat(firstLead.loan_amount).toLocaleString()}` : "Not Applied"}
                       </p>
                     </div>
                     <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
@@ -422,7 +503,7 @@ const Dashboard = () => {
                     <div>
                       <p className="text-sm text-gray-600">Loan Type</p>
                       <p className="text-lg font-semibold text-gray-900 mt-1 truncate">
-                        {loanData?.loan_type?.name || "Not Selected"}
+                        {firstLead?.loan_type?.name || "Not Selected"}
                       </p>
                     </div>
                     <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
@@ -435,59 +516,125 @@ const Dashboard = () => {
                   <div className="flex items-center justify-between">
                     <div>
                       <p className="text-sm text-gray-600">Status</p>
-                      <p className={`text-lg font-semibold mt-1 ${getStatusColor(loanData?.status?.name)}`}>
-                        {loanData?.status?.name || "Not Started"}
+                      <p className={`text-lg font-semibold mt-1 ${getStatusColor(firstLead?.status?.name)}`}>
+                        {firstLead?.status?.name || "Not Started"}
                       </p>
                     </div>
                     <div className={`w-12 h-12 rounded-lg flex items-center justify-center ${
-                      loanData?.status?.name === "New Application" ? "bg-blue-100" :
-                      loanData?.status?.name === "Approved" ? "bg-green-100" :
-                      loanData?.status?.name === "Rejected" ? "bg-red-100" :
+                      firstLead?.status?.name === "New Application" ? "bg-blue-100" :
+                      firstLead?.status?.name === "Approved" ? "bg-green-100" :
+                      firstLead?.status?.name === "Rejected" ? "bg-red-100" :
                       "bg-gray-100"
                     }`}>
                       <span className={`${
-                        loanData?.status?.name === "New Application" ? "text-blue-600" :
-                        loanData?.status?.name === "Approved" ? "text-green-600" :
-                        loanData?.status?.name === "Rejected" ? "text-red-600" :
+                        firstLead?.status?.name === "New Application" ? "text-blue-600" :
+                        firstLead?.status?.name === "Approved" ? "text-green-600" :
+                        firstLead?.status?.name === "Rejected" ? "text-red-600" :
                         "text-gray-600"
                       }`}>
-                        {getStatusIcon(loanData?.status?.name)}
+                        {getStatusIcon(firstLead?.status?.name)}
                       </span>
                     </div>
                   </div>
                 </div>
               </div>
 
-              {/* Detailed Information */}
+              {documentData && (
+                <div className="mb-8 bg-white rounded-xl shadow-sm p-6 border border-gray-100">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <FaFileUpload className="w-6 h-6 text-orange-600" />
+                      <h2 className="text-lg font-semibold text-gray-900">Document Upload Status</h2>
+                    </div>
+                    <div className="flex items-center gap-4">
+                      <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
+                        docStatus.isComplete ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'
+                      }`}>
+                        {docStatus.isComplete ? '✓ All Complete' : '⏳ In Progress'}
+                      </span>
+                    </div>
+                  </div>
+                  
+                  <div className="mt-3">
+                    <div className="w-full bg-gray-200 rounded-full h-2">
+                      <div 
+                        className={`h-2 rounded-full transition-all duration-500 ${
+                          docStatus.isComplete ? 'bg-green-500' : 'bg-yellow-500'
+                        }`}
+                        style={{ width: `${docStatus.total > 0 ? (docStatus.completed / docStatus.total) * 100 : 0}%` }}
+                      />
+                    </div>
+                  </div>
+
+                  {accountOverview && (
+                    <div className="mt-4 grid grid-cols-1 md:grid-cols-3 gap-4">
+                      <div className={`rounded-lg p-3 text-center ${
+                        accountOverview.personal_kyc_complete 
+                          ? 'bg-green-50 border border-green-200' 
+                          : 'bg-yellow-50 border border-yellow-200'
+                      }`}>
+                        <p className="text-sm text-gray-600">Personal KYC</p>
+                        <p className="text-sm font-semibold text-black">
+                          {accountOverview.personal_kyc_complete ? '✅ Complete' : '⏳ Pending'}
+                        </p>
+                      </div>
+                      <div className="bg-blue-50 rounded-lg p-3 text-center border border-blue-200">
+                        <p className="text-sm text-gray-600">Businesses</p>
+                        <p className="text-sm font-semibold text-black">{accountOverview.total_businesses}</p>
+                      </div>
+                      <div className="bg-purple-50 rounded-lg p-3 text-center border border-purple-200">
+                        <p className="text-sm text-gray-600">Loans in Progress</p>
+                        <p className="text-sm font-semibold text-black">{accountOverview.total_loans_in_progress}</p>
+                      </div>
+                    </div>
+                  )}
+
+                  <Link
+                    to="/dashboard/document-upload"
+                    className="mt-4 inline-block text-blue-600 hover:text-blue-700 text-sm font-medium"
+                  >
+                    View All Documents →
+                  </Link>
+                </div>
+              )}
+
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                {/* Company Details */}
                 <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
                   <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
                     <FaBuilding className="w-5 h-5 text-blue-600" />
                     Company Details
                   </h2>
-                  {companyData ? (
+                  {companies.length > 0 ? (
                     <div className="space-y-3">
-                      <div className="flex justify-between">
-                        <span className="text-gray-600">Company Name</span>
-                        <span className="font-medium text-gray-900">{companyData.company_name}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-gray-600">PAN Number</span>
-                        <span className="font-medium text-gray-900">{companyData.pan_number || "N/A"}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-gray-600">Entity Type</span>
-                        <span className="font-medium text-gray-900">{companyData.entity_type || "N/A"}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-gray-600">Industry</span>
-                        <span className="font-medium text-gray-900">{companyData.industry_type || "N/A"}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-gray-600">City</span>
-                        <span className="font-medium text-gray-900">{companyData.city || "N/A"}</span>
-                      </div>
+                      {companies.slice(0, 1).map((company) => (
+                        <div key={company.id}>
+                          <div className="flex justify-between">
+                            <span className="text-gray-600">Company Name</span>
+                            <span className="font-medium text-gray-900">{company.company_name}</span>
+                          </div>
+                          <div className="flex justify-between mt-2">
+                            <span className="text-gray-600">PAN Number</span>
+                            <span className="font-medium text-gray-900">{company.pan_number || "N/A"}</span>
+                          </div>
+                          <div className="flex justify-between mt-2">
+                            <span className="text-gray-600">Entity Type</span>
+                            <span className="font-medium text-gray-900">{company.entity_type || "N/A"}</span>
+                          </div>
+                          <div className="flex justify-between mt-2">
+                            <span className="text-gray-600">Industry</span>
+                            <span className="font-medium text-gray-900">{company.industry_type || "N/A"}</span>
+                          </div>
+                          <div className="flex justify-between mt-2">
+                            <span className="text-gray-600">City</span>
+                            <span className="font-medium text-gray-900">{company.city || "N/A"}</span>
+                          </div>
+                        </div>
+                      ))}
+                      {companies.length > 1 && (
+                        <p className="text-sm text-blue-600 mt-2">
+                          + {companies.length - 1} more companies
+                        </p>
+                      )}
                     </div>
                   ) : (
                     <p className="text-gray-500 text-center py-4">No company details found</p>
@@ -496,11 +643,10 @@ const Dashboard = () => {
                     to="/dashboard/company"
                     className="mt-4 inline-block text-blue-600 hover:text-blue-700 text-sm font-medium"
                   >
-                    Edit Company Details →
+                    {companies.length > 0 ? "Manage Companies →" : "Add Company →"}
                   </Link>
                 </div>
 
-                {/* Bank Details */}
                 <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
                   <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
                     <FaUniversity className="w-5 h-5 text-green-600" />
@@ -510,23 +656,23 @@ const Dashboard = () => {
                     <div className="space-y-3">
                       <div className="flex justify-between">
                         <span className="text-gray-600">Bank Name</span>
-                        <span className="font-medium text-gray-900">{bankData.bank_name}</span>
+                        <span className="font-medium text-gray-900">{bankData.bank_name || bankData.name || "N/A"}</span>
                       </div>
                       <div className="flex justify-between">
                         <span className="text-gray-600">Account Holder</span>
-                        <span className="font-medium text-gray-900">{bankData.account_holder_name}</span>
+                        <span className="font-medium text-gray-900">{bankData.account_holder_name || bankData.holder_name || "N/A"}</span>
                       </div>
                       <div className="flex justify-between">
                         <span className="text-gray-600">Account Number</span>
-                        <span className="font-medium text-gray-900">{bankData.account_number}</span>
+                        <span className="font-medium text-gray-900">{bankData.account_number || "N/A"}</span>
                       </div>
                       <div className="flex justify-between">
                         <span className="text-gray-600">IFSC Code</span>
-                        <span className="font-medium text-gray-900">{bankData.ifsc_code}</span>
+                        <span className="font-medium text-gray-900">{bankData.ifsc_code || "N/A"}</span>
                       </div>
                       <div className="flex justify-between">
                         <span className="text-gray-600">Account Type</span>
-                        <span className="font-medium text-gray-900">{bankData.account_type}</span>
+                        <span className="font-medium text-gray-900">{bankData.account_type || "N/A"}</span>
                       </div>
                     </div>
                   ) : (
@@ -536,49 +682,48 @@ const Dashboard = () => {
                     to="/dashboard/company-banks"
                     className="mt-4 inline-block text-blue-600 hover:text-blue-700 text-sm font-medium"
                   >
-                    Edit Bank Details →
+                    {bankData ? "Edit Bank Details →" : "Add Bank Details →"}
                   </Link>
                 </div>
 
-                {/* Loan Application Details */}
                 <div className="lg:col-span-2 bg-white rounded-xl shadow-sm p-6 border border-gray-100">
                   <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
                     <IoDocumentText className="w-5 h-5 text-purple-600" />
                     Loan Application Details
                   </h2>
-                  {loanData ? (
+                  {firstLead ? (
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div>
                         <div className="flex justify-between py-2 border-b border-gray-100">
                           <span className="text-gray-600">Lead Number</span>
-                          <span className="font-medium text-gray-900">{loanData.lead_number || "N/A"}</span>
+                          <span className="font-medium text-gray-900">{firstLead.lead_number || "N/A"}</span>
                         </div>
                         <div className="flex justify-between py-2 border-b border-gray-100">
                           <span className="text-gray-600">Loan Amount</span>
-                          <span className="font-medium text-gray-900">₹{parseFloat(loanData.loan_amount || 0).toLocaleString()}</span>
+                          <span className="font-medium text-gray-900">₹{parseFloat(firstLead.loan_amount || 0).toLocaleString()}</span>
                         </div>
                         <div className="flex justify-between py-2 border-b border-gray-100">
                           <span className="text-gray-600">Loan Type</span>
-                          <span className="font-medium text-gray-900">{loanData.loan_type?.name || "N/A"}</span>
+                          <span className="font-medium text-gray-900">{firstLead.loan_type?.name || "N/A"}</span>
                         </div>
                       </div>
                       <div>
                         <div className="flex justify-between py-2 border-b border-gray-100">
                           <span className="text-gray-600">Status</span>
-                          <span className={`font-medium ${getStatusColor(loanData.status?.name)}`}>
-                            {loanData.status?.name || "N/A"}
+                          <span className={`font-medium ${getStatusColor(firstLead.status?.name)}`}>
+                            {firstLead.status?.name || "N/A"}
                           </span>
                         </div>
                         <div className="flex justify-between py-2 border-b border-gray-100">
                           <span className="text-gray-600">Created At</span>
                           <span className="font-medium text-gray-900">
-                            {loanData.created_at ? new Date(loanData.created_at).toLocaleDateString() : "N/A"}
+                            {firstLead.created_at ? new Date(firstLead.created_at).toLocaleDateString() : "N/A"}
                           </span>
                         </div>
                         <div className="flex justify-between py-2">
-                          <span className="text-gray-600">Bank</span>
+                          <span className="text-gray-600">Company</span>
                           <span className="font-medium text-gray-900">
-                            {loanData.loan_applications?.[0]?.bank?.name || "N/A"}
+                            {firstLead.company?.name || firstLead.company_name || "N/A"}
                           </span>
                         </div>
                       </div>
@@ -590,11 +735,10 @@ const Dashboard = () => {
                     to="/dashboard/loan-application"
                     className="mt-4 inline-block text-blue-600 hover:text-blue-700 text-sm font-medium"
                   >
-                    {loanData ? "Update Loan Application →" : "Apply for Loan →"}
+                    {firstLead ? "Update Loan Application →" : "Apply for Loan →"}
                   </Link>
                 </div>
 
-                {/* Quick Actions */}
                 <div className="lg:col-span-2">
                   <h2 className="text-lg font-semibold text-gray-900 mb-4">Quick Actions</h2>
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -610,21 +754,32 @@ const Dashboard = () => {
                       className="bg-white rounded-xl shadow-sm p-4 border border-gray-100 hover:shadow-md transition text-center"
                     >
                       <FaBuilding className="w-8 h-8 text-green-600 mx-auto mb-2" />
-                      <span className="text-sm font-medium text-gray-700">Company Details</span>
+                      <span className="text-sm font-medium text-gray-700">
+                        {companies.length > 0 ? "Manage Companies" : "Add Company"}
+                      </span>
                     </Link>
                     <Link
                       to="/dashboard/company-banks"
                       className="bg-white rounded-xl shadow-sm p-4 border border-gray-100 hover:shadow-md transition text-center"
                     >
                       <FaUniversity className="w-8 h-8 text-purple-600 mx-auto mb-2" />
-                      <span className="text-sm font-medium text-gray-700">Bank Details</span>
+                      <span className="text-sm font-medium text-gray-700">
+                        {bankData ? "Edit Bank" : "Add Bank"}
+                      </span>
                     </Link>
                     <Link
                       to="/dashboard/document-upload"
-                      className="bg-white rounded-xl shadow-sm p-4 border border-gray-100 hover:shadow-md transition text-center"
+                      className={`bg-white rounded-xl shadow-sm p-4 border hover:shadow-md transition text-center ${
+                        docStatus.isComplete ? 'border-green-300 bg-green-50' : 'border-gray-100'
+                      }`}
                     >
-                      <FaFileUpload className="w-8 h-8 text-orange-600 mx-auto mb-2" />
+                      <FaFileUpload className={`w-8 h-8 mx-auto mb-2 ${
+                        docStatus.isComplete ? 'text-green-600' : 'text-orange-600'
+                      }`} />
                       <span className="text-sm font-medium text-gray-700">Upload Documents</span>
+                      {docStatus.isComplete && (
+                        <span className="text-xs text-green-600 block">✓ Complete</span>
+                      )}
                     </Link>
                   </div>
                 </div>

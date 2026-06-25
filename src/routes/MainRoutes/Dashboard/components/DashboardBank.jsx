@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import toast from "react-hot-toast";
 import { 
   getBankAccounts, 
   createBankAccount, 
@@ -102,7 +103,7 @@ const DashboardBank = () => {
         if (localId) {
           setCompanyId(localId);
         } else {
-          alert("Company not found. Please complete your company profile first.");
+          toast.error("Company not found. Please complete your company profile first.");
           navigate("/dashboard/company");
           return;
         }
@@ -117,7 +118,7 @@ const DashboardBank = () => {
         setCompanyId(localId);
         await fetchBankAccounts();
       } else {
-        alert("Company not found. Please complete your company profile first.");
+        toast.error("Company not found. Please complete your company profile first.");
         navigate("/dashboard/company");
       }
     }
@@ -176,7 +177,7 @@ const DashboardBank = () => {
     // Validate required fields
     if (!formData.bank_name || !formData.account_holder_name || 
         !formData.account_number || !formData.ifsc_code || !formData.account_type) {
-      alert("Please fill in all required fields.");
+      toast.error("Please fill in all required fields.");
       return;
     }
 
@@ -199,9 +200,11 @@ const DashboardBank = () => {
       if (bankId) {
         // Update existing bank account
         response = await updateBankAccount(bankId, payload);
+        toast.success("Bank Account Updated Successfully");
       } else {
         // Create new bank account
         response = await createBankAccount(payload);
+        toast.success("Bank Account Added Successfully");
       }
       
       console.log("📥 Bank Response:", response);
@@ -221,11 +224,6 @@ const DashboardBank = () => {
       });
       setIsEditing(false);
 
-      alert(
-        response?.data?.message ||
-          (bankId ? "Bank Account Updated Successfully" : "Bank Account Added Successfully")
-      );
-
       navigate("/dashboard/company-banks");
     } catch (error) {
       console.error("❌ Bank Save Error:", error);
@@ -233,11 +231,11 @@ const DashboardBank = () => {
       if (error?.response?.data?.errors) {
         const errors = error.response.data.errors;
         const errorMessage = Object.values(errors).flat().join("\n");
-        alert(errorMessage);
+        toast.error(errorMessage);
       } else if (error?.response?.data?.message) {
-        alert(error.response.data.message);
+        toast.error(error.response.data.message);
       } else {
-        alert(bankId ? "Failed To Update Bank Account." : "Failed To Save Bank Account.");
+        toast.error(bankId ? "Failed To Update Bank Account." : "Failed To Save Bank Account.");
       }
     } finally {
       setLoading(false);
@@ -269,18 +267,20 @@ const DashboardBank = () => {
   };
 
   const handleDelete = async (id) => {
-    if (!window.confirm('Are you sure you want to delete this bank account?')) {
+    // Custom confirmation using toast
+    const confirmDelete = window.confirm('Are you sure you want to delete this bank account?');
+    if (!confirmDelete) {
       return;
     }
 
     try {
       setLoading(true);
       await deleteBankAccount(id);
-      alert('Bank account deleted successfully');
+      toast.success('Bank account deleted successfully');
       await fetchBankAccounts();
     } catch (error) {
       console.error("Delete Bank Error:", error);
-      alert(error?.response?.data?.message || 'Failed to delete bank account');
+      toast.error(error?.response?.data?.message || 'Failed to delete bank account');
     } finally {
       setLoading(false);
     }

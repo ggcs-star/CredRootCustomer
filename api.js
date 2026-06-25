@@ -32,6 +32,9 @@ API.interceptors.response.use(
             // Clear localStorage and redirect to login
             localStorage.removeItem('token');
             localStorage.removeItem('user');
+            localStorage.removeItem('company_id');
+            localStorage.removeItem('bank_id');
+            localStorage.removeItem('lead_id');
             // window.location.href = '/login';
         }
         return Promise.reject(error);
@@ -256,13 +259,26 @@ export const getBanks = async () => {
 // DOCUMENT APIs
 // =========================
 
-export const getLeadDocuments = () => {
-    const leadId = localStorage.getItem("lead_id");
+/**
+ * Get documents for a lead
+ * GET: /api/master/documents
+ */
+export const getLeadDocuments = (leadId) => {
     return API.get(
         `/master/documents?stage=final_application&lead_id=${leadId}`
     );
 };
 
+/**
+ * Upload a document
+ * POST: /api/documents/upload
+ * Required fields in FormData:
+ * - lead_id: Lead ID
+ * - document_master_id: Document ID
+ * - document_side: 'front', 'back', or 'single'
+ * - file: The file to upload
+ * - company_id: (Optional) Company ID for business documents
+ */
 export const uploadDocument = (data) =>
     API.post(
         "/documents/upload",
@@ -274,9 +290,36 @@ export const uploadDocument = (data) =>
         }
     );
 
+/**
+ * Upload a personal document (for profile)
+ * POST: /api/user/documents/upload
+ * Required fields in FormData:
+ * - document_master_id: Document ID
+ * - document_side: 'front', 'back', or 'single'
+ * - file: The file to upload
+ */
+export const uploadPersonalDocument = (data) =>
+    API.post(
+        "/user/documents/upload",
+        data,
+        {
+            headers: {
+                "Content-Type": "multipart/form-data",
+            },
+        }
+    );
+
+/**
+ * Finalize the application
+ * POST: /api/documents/finalize
+ */
 export const finalizeApplication = (leadId) =>
     API.post(`/documents/finalize?lead_id=${leadId}`);
 
+/**
+ * Get documents by stage
+ * GET: /api/master/documents
+ */
 export const getDocuments = (stage, entity_type, loan_type_id) =>
     API.get("/master/documents", {
         params: {
@@ -608,6 +651,10 @@ export const deleteBankAccount = async (id) => {
 // USER PROFILE APIs
 // =========================
 
+/**
+ * Get user profile with personal documents
+ * GET: /api/user/profile
+ */
 export const getUserProfile = async () => {
     try {
         const response = await API.get("/user/profile");
@@ -623,6 +670,10 @@ export const getUserProfile = async () => {
     }
 };
 
+/**
+ * Update user profile
+ * POST: /api/user/profile
+ */
 export const updateUserProfile = async (data) => {
     try {
         const response = await API.post("/user/profile", data);
@@ -630,6 +681,29 @@ export const updateUserProfile = async (data) => {
         return response;
     } catch (error) {
         console.error("❌ Update User Profile Error:", {
+            message: error.message,
+            status: error.response?.status,
+            data: error.response?.data
+        });
+        throw error;
+    }
+};
+
+/**
+ * Upload personal document for user profile
+ * POST: /api/user/documents/upload
+ */
+export const uploadUserDocument = async (formData) => {
+    try {
+        const response = await API.post("/user/documents/upload", formData, {
+            headers: {
+                "Content-Type": "multipart/form-data",
+            },
+        });
+        console.log("✅ Upload User Document Response:", response.data);
+        return response;
+    } catch (error) {
+        console.error("❌ Upload User Document Error:", {
             message: error.message,
             status: error.response?.status,
             data: error.response?.data
