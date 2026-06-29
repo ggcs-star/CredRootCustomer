@@ -33,8 +33,8 @@ import {
 const DashboardShimmer = () => {
   return (
     <div className="flex h-screen bg-gray-100 overflow-hidden">
-      {/* Sidebar Shimmer */}
-      <aside className="bg-white shadow-lg w-64 flex flex-col h-screen">
+      {/* Sidebar Shimmer - Fixed/Sticky */}
+      <aside className="bg-white shadow-lg w-64 flex flex-col h-screen sticky top-0 flex-shrink-0">
         <div className="flex items-center justify-between p-4 border-b">
           <div className="h-8 bg-gray-200 rounded w-24 animate-pulse"></div>
           <div className="h-6 w-6 bg-gray-200 rounded animate-pulse"></div>
@@ -201,11 +201,9 @@ const Dashboard = () => {
   const fetchCompanies = async () => {
     try {
       const response = await getCompanyDetails();
-      // Handle the response structure - data is an array of companies
       const companiesData = response?.data?.data || [];
       setCompanies(companiesData);
       
-      // If there's a company, store the first one's ID
       if (companiesData.length > 0 && !localStorage.getItem("company_id")) {
         localStorage.setItem("company_id", companiesData[0].id);
       }
@@ -361,13 +359,11 @@ const Dashboard = () => {
 
   const getCompanyName = () => {
     if (companies.length === 0) return "Not Set";
-    // If there's a company in localStorage, find it
     const companyId = localStorage.getItem("company_id");
     if (companyId) {
       const company = companies.find(c => c.id === parseInt(companyId));
       if (company) return company.company_name;
     }
-    // Otherwise return the first company name
     return companies[0]?.company_name || "Not Set";
   };
 
@@ -381,13 +377,15 @@ const Dashboard = () => {
   const firstLead = getFirstLead();
 
   return (
-    <div className="flex h-screen bg-gray-100 overflow-hidden">
+    <div className="flex h-screen bg-gray-100 ">
+      {/* Sidebar - Sticky/Fixed */}
       <aside
         className={`bg-white shadow-lg transition-all duration-300 ${
           isSidebarOpen ? "w-64" : "w-20"
-        } flex flex-col h-screen overflow-y-auto`}
+        } flex flex-col h-screen sticky top-0 flex-shrink-0 overflow-y-auto`}
+        style={{ position: 'sticky', top: 0 }}
       >
-        <div className="p-4 border-b">
+        <div className="p-4 border-b bg-white sticky top-0 z-10">
           <div className="flex items-center gap-2">
             <div className="w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center font-semibold text-lg flex-shrink-0">
               {user?.name?.charAt(0)?.toUpperCase() || "U"}
@@ -415,7 +413,7 @@ const Dashboard = () => {
           </div>
         </div>
 
-        <nav className="flex-1 p-4">
+        <nav className="flex-1 p-4 overflow-y-auto">
           <ul className="space-y-1">
             {menuItems.map((item) => (
               <li key={item.id}>
@@ -440,7 +438,7 @@ const Dashboard = () => {
           </ul>
         </nav>
 
-        <div className="p-4 border-t">
+        <div className="p-4 border-t bg-white sticky bottom-0">
           <button
             onClick={handleLogout}
             className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-red-600 hover:bg-red-50 transition-all"
